@@ -1,3 +1,9 @@
+// remonter en haut en douceur (animation maison : le « smooth » natif saute d’un coup sur iPhone)
+function smoothTop() {
+  const y0 = window.scrollY; if (y0 < 2) return; const t0 = performance.now(); const d = Math.min(650, 280 + y0 / 6);
+  const step = now => { const k = Math.min(1, (now - t0) / d); const e = 1 - Math.pow(1 - k, 3); window.scrollTo(0, y0 * (1 - e)); if (k < 1) requestAnimationFrame(step); };
+  requestAnimationFrame(step);
+}
 // ============================================================
 //  SENSATION D’APPLI MOBILE + FLUIDITÉ
 // ============================================================
@@ -28,7 +34,7 @@
   addEventListener('scroll', ask, { passive: true }); addEventListener('resize', ask);
   render = (orig => function () { const r = orig.apply(this, arguments); ask(); return r; })(render);
   // toucher la barre du haut remonte en haut de la page (comme toucher l’heure sur iPhone)
-  bar.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+  bar.addEventListener('click', () => smoothTop());
 })();
 
 // ---------- 3. Chaque onglet garde sa position ; toucher l’onglet ouvert remonte en haut ----------
@@ -36,7 +42,7 @@
   const pos = {};
   $('#tabs').addEventListener('click', e => {
     const b = e.target.closest('button'); if (!b) return; const k = b.dataset.tab; if (!k || k.startsWith('__')) return;
-    if (k === S.ui.tab || (k === 't_home' && S.ui.tab === 't_live')) { e.stopImmediatePropagation(); window.scrollTo({ top: 0, behavior: 'smooth' }); return; }
+    if (k === S.ui.tab || (k === 't_home' && S.ui.tab === 't_live')) { e.stopImmediatePropagation(); smoothTop(); return; }
     pos[S.ui.tab] = window.scrollY;
     const target = k; setTimeout(() => { if (S.ui.tab === target) window.scrollTo(0, pos[target] || 0); }, 0);
   }, true);
