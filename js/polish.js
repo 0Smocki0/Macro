@@ -157,7 +157,7 @@ VIEWS.menus = vMenus;
   document.addEventListener('touchend', () => {
     if (!on || !h) { on = false; return; } on = false; const el = v();
     // si l’onglet n’a pas changé, la page revient en place
-    setTimeout(() => { if (el.style.transform) { el.style.transition = 'transform .32s cubic-bezier(.2,.9,.3,1.1), opacity .25s'; el.style.transform = ''; el.style.opacity = ''; } }, 0);
+    setTimeout(() => { if (el.style.transform && !window.SW_OUT) { el.style.transition = 'transform .32s cubic-bezier(.2,.9,.3,1.1), opacity .25s'; el.style.transform = ''; el.style.opacity = ''; } }, 0);
   }, { passive: true });
   swipeTab = (orig => function (dir) {
     const before = S.ui.tab; const el = v();
