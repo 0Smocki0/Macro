@@ -142,7 +142,8 @@ function swipeTab(dir) {
       else { sheet.style.transition = 'transform .28s cubic-bezier(.2,.9,.3,1.2)'; sheet.style.transform = ''; }
     } else if (mode === 'h') {
       const dx = e.changedTouches[0].clientX - sx;
-      if (Math.abs(dx) > 70 && Date.now() - st < 700) {
+      const adx = Math.abs(dx), dt = Date.now() - st;
+      if (adx > 55 || (adx > 24 && adx / Math.max(1, dt) > 0.35)) {
         if ($('#wiz') && W) { (dx < 0 ? ACTIONS.wNext : ACTIONS.wBack)(); }
         else if (!$('#modal').innerHTML && !$('#launch') && !e.target.closest('.daystrip, .chipsrow, .srow, input, .exstage, nav.tabs, .wchart')) swipeTab(dx < 0 ? 1 : -1);
       }

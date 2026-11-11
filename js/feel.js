@@ -44,3 +44,12 @@
 
 // ---------- 4. Pas de sélection de texte ni de menu « Copier » sur un appui long (sauf dans les champs) ----------
 document.addEventListener('selectstart', e => { if (!e.target.closest || !e.target.closest('input, textarea, [contenteditable]')) e.preventDefault(); });
+
+// ---------- 5. Glisser après le dernier onglet ouvre l’accueil ----------
+swipeTab = (orig => function (dir) {
+  const mode = S.ui.tab.startsWith('t_') ? 'train' : 'nutri';
+  const list = TABS[mode].map(x => x[0]).filter(k => !k.startsWith('__'));
+  const cur = S.ui.tab === 't_live' ? 't_home' : S.ui.tab;
+  if (dir > 0 && list.indexOf(cur) === list.length - 1) { const v = $('#view'); v.style.transform = ''; v.style.opacity = ''; showLauncher(); return; }
+  return orig.apply(this, arguments);
+})(swipeTab);

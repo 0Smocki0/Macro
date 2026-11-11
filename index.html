@@ -1013,10 +1013,10 @@ button, .chip, .item, .menuopt, nav.tabs { -webkit-user-select: none; user-selec
 body { overscroll-behavior-y: none; }
 
 /* glisser d’un onglet à l’autre */
-@keyframes swInL { from { opacity: 0; transform: translateX(42px); } to { opacity: 1; transform: none; } }
-@keyframes swInR { from { opacity: 0; transform: translateX(-42px); } to { opacity: 1; transform: none; } }
-#view.enter.swl > * { animation-name: swInL; animation-duration: .36s; animation-timing-function: cubic-bezier(.2, .9, .25, 1); }
-#view.enter.swr > * { animation-name: swInR; animation-duration: .36s; animation-timing-function: cubic-bezier(.2, .9, .25, 1); }
+@keyframes swInL { from { opacity: .2; transform: translate3d(70px,0,0); } to { opacity: 1; transform: none; } }
+@keyframes swInR { from { opacity: .2; transform: translate3d(-70px,0,0); } to { opacity: 1; transform: none; } }
+#view.enter.swl > * { animation-name: swInL; animation-duration: .3s; animation-timing-function: cubic-bezier(.2, .9, .25, 1); }
+#view.enter.swr > * { animation-name: swInR; animation-duration: .3s; animation-timing-function: cubic-bezier(.2, .9, .25, 1); }
 #view { will-change: transform; }
 
 /* associations dans les menus */

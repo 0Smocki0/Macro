@@ -35,7 +35,7 @@
     let y = below ? r.bottom + 8 : r.top - 8 - h; y = Math.max(m, Math.min(y, vh - h - m));
     box.style.left = x + 'px'; box.style.top = y + 'px';
     box.style.transformOrigin = `${right ? 'right' : 'left'} ${below ? 'top' : 'bottom'}`;
-    POP = { bg, box };
+    POP = { bg, box, t: Date.now(), y: scrollY, w: innerWidth, anchor };
     bg.addEventListener('pointerdown', e => { e.preventDefault(); closePop(); });
     box.addEventListener('click', e => { if (e.target.closest('[data-act]')) setTimeout(() => { if (POP && POP.box === box) closePop(); }, 0); });
     if (navigator.vibrate) try { navigator.vibrate(8); } catch (e) { }
@@ -50,7 +50,13 @@
   };
   const _close = closeSheet;
   closeSheet = function () { closePop(); return _close.apply(this, arguments); };
-  addEventListener('scroll', e => { if (POP && e.target instanceof Node && POP.box.contains(e.target)) return; closePop(); }, { passive: true, capture: true });
-  addEventListener('resize', () => closePop());
+  addEventListener('scroll', e => {
+    if (!POP || Date.now() - POP.t < 450) return;
+    const tg = e.target; if (tg instanceof Node && POP.box.contains(tg)) return;
+    const page = tg === document || tg === document.documentElement || tg === document.body;
+    if (page ? Math.abs(scrollY - POP.y) < 12 : !(tg instanceof Node && tg.contains(POP.anchor))) return;
+    closePop();
+  }, { passive: true, capture: true });
+  addEventListener('resize', () => { if (POP && innerWidth !== POP.w) closePop(); });
   document.addEventListener('keydown', e => { if (e.key === 'Escape') closePop(); });
 })();
