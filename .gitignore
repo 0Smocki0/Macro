@@ -1,0 +1,12 @@
+# Liste blanche : seuls les fichiers de l'appli sont publiés.
+# Tout le reste (export Hevy, sauvegardes, réglages locaux…) reste uniquement sur ce PC.
+*
+!.gitignore
+!index.html
+!sw.js
+!manifest.webmanifest
+!icons/
+!icons/*.png
+!icons/*.svg
+!js/
+!js/*.js
