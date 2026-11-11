@@ -108,7 +108,7 @@ function summaryHTML(w, det) {
 // ---------- Gestes tactiles ----------
 function swipeTab(dir) {
   const mode = S.ui.tab.startsWith('t_') ? 'train' : 'nutri';
-  const list = TABS[mode].map(x => x[0]).filter(k => k !== '__switch');
+  const list = TABS[mode].map(x => x[0]).filter(k => !k.startsWith('__'));
   const cur = S.ui.tab === 't_live' ? 't_home' : S.ui.tab; const i = list.indexOf(cur); if (i < 0) return;
   const j = i + dir; if (j < 0 || j >= list.length) return;
   S.ui.tab = list[j] === 't_home' && TS.active ? 't_live' : list[j];

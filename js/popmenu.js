@@ -5,7 +5,7 @@
 (function popMenus() {
   let LAST = null, POP = null;
   document.addEventListener('pointerdown', e => {
-    if (e.target.closest && e.target.closest('.pop')) return;
+    if (e.target.closest && e.target.closest('.ctxpop')) return;
     const el = e.target.closest && e.target.closest('button, [data-act]');
     LAST = el ? { el, t: Date.now() } : null;
   }, true);
@@ -22,9 +22,9 @@
   }
   function openPop(title, items, anchor) {
     closePop(true);
-    const bg = document.createElement('div'); bg.className = 'pop-bg';
-    const box = document.createElement('div'); box.className = 'pop'; box.setAttribute('role', 'menu');
-    box.innerHTML = `${title ? `<div class="pop-t">${esc(title)}</div>` : ''}${items.map(i => { i.setAttribute('role', 'menuitem'); return i.outerHTML; }).join('')}`;
+    const bg = document.createElement('div'); bg.className = 'ctxpop-bg';
+    const box = document.createElement('div'); box.className = 'ctxpop'; box.setAttribute('role', 'menu');
+    box.innerHTML = `${title ? `<div class="ctxpop-t">${esc(title)}</div>` : ''}${items.map(i => { i.setAttribute('role', 'menuitem'); return i.outerHTML; }).join('')}`;
     document.body.append(bg, box);
     const r = anchor.getBoundingClientRect(), vw = innerWidth, vh = innerHeight, m = 12;
     const w = Math.min(270, vw - 2 * m); box.style.width = w + 'px';
@@ -42,7 +42,7 @@
   }
   const _open = openSheet;
   openSheet = function (title, body) {
-    const a = LAST && Date.now() - LAST.t < 1500 && LAST.el.isConnected && !LAST.el.closest('.pop') ? LAST.el : null;
+    const a = LAST && Date.now() - LAST.t < 1500 && LAST.el.isConnected && !LAST.el.closest('.ctxpop') ? LAST.el : null;
     const items = a && a.offsetWidth < 120 ? isOptionList(body) : null;
     if (items) { LAST = null; openPop(title, items, a); return; }
     closePop(true);

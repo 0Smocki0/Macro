@@ -719,7 +719,8 @@ const _baseRender = render;
 let LAST_VIEW = '';
 render = function () {
   _baseRender(); renderTabs(); renderLiveBar(); tick();
-  const key = S.ui.tab + '|' + (S.ui.date || '') + '|' + (S.ui.mDay ?? '') + '|' + (S.ui.pSub || '') + '|' + (S.ui.statP || '') + (S.ui.statOff || '');
+  // l’animation d’arrivée ne se joue qu’en changeant d’onglet (pas en choisissant une option ou un sous-onglet)
+  const key = S.ui.tab;
   if (key !== LAST_VIEW) { LAST_VIEW = key; const v = $('#view'); v.classList.remove('enter'); void v.offsetWidth; v.classList.add('enter'); clearTimeout(render._t); render._t = setTimeout(() => v.classList.remove('enter'), 1100); }
   JUST = null;
 };
