@@ -87,7 +87,7 @@ showLauncher = function () {
   const cfg = homeCfg();
   const parts = { nutri: box.querySelector('.lcard2.nutri'), train: box.querySelector('.lcard2.train') };
   const supEl = box.querySelector('.lsup');
-  [...box.querySelectorAll('.lsec, .ltiles, .lquick, .lsup')].forEach(n => n.remove());
+  [...box.querySelectorAll(':scope > .lsec, :scope > .ltiles, :scope > .lquick, :scope > .lsup')].forEach(n => n.remove());
   const make = html => { const t = document.createElement('div'); t.innerHTML = html.trim(); return [...t.childNodes]; };
   const tilesHTML = cfg.tiles.map(id => TILES[id] ? TILES[id].f().replace('<button class="ltile"', `<button class="ltile" data-tid="${id}"`) : '').filter(Boolean);
   const blocks = {
