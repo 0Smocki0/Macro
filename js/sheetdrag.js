@@ -15,7 +15,7 @@
   let closing = false;
   function slideClose(fromPx) {
     const sh = sheetEl(), bg = bgEl(); if (!sh || closing) { if (!sh) closeSheet(); return; }
-    closing = true; const h = sh.offsetHeight || 600; const left = h - (fromPx || 0);
+    sh.style.animation = 'none'; closing = true; const h = sh.offsetHeight || 600; const left = h - (fromPx || 0);
     const t = Math.max(140, Math.min(300, left / 2.4));
     sh.style.transition = `transform ${t}ms cubic-bezier(.3, .0, .8, .4)`; sh.style.transform = `translateY(${h + 20}px)`;
     if (bg) { bg.style.transition = `background-color ${t}ms linear`; bg.style.backgroundColor = 'rgba(0,0,0,0)'; }
@@ -39,8 +39,9 @@
     if (!st) return; const t = e.touches[0]; const dx = t.clientX - st.x, dy = t.clientY - st.y;
     if (!st.on) {
       if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 8) { st = null; return; }
-      if (dy < -4) { st = null; return; } // on remonte : défilement normal
-      if (dy > 6 && (st.onTop || !st.body || st.body.scrollTop <= 0)) { st.on = true; st.y = t.clientY; st.sh.style.transition = 'none'; const bg = bgEl(); if (bg) bg.style.transition = 'none'; }
+      if (dy < -4) { st = null; return; }
+      if (dy > 0 && (st.onTop || !st.body || st.body.scrollTop <= 0)) e.preventDefault(); // empêche iOS de lancer le rebond // on remonte : défilement normal
+      if (dy > 6 && (st.onTop || !st.body || st.body.scrollTop <= 0)) { st.on = true; st.y = t.clientY; st.sh.style.animation = 'none'; st.sh.style.transition = 'none'; const bg = bgEl(); if (bg) bg.style.transition = 'none'; }
       else return;
     }
     e.preventDefault();

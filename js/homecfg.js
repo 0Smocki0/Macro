@@ -163,7 +163,7 @@ Object.assign(ACTIONS, {
 // sur une carte qui a un menu ⋯, l’appui long ouvre ce même menu ; sur l’accueil, il ouvre la personnalisation
 const LP_TARGETS = [
   ['section.card.meal', '[data-act=mealMenu]'], ['section.card.routine', '[data-act=tRoutineMenu]'], ['.whist2', '[data-act=tWMenu]'],
-  ['.rtex2', '[data-act=rteMenu]'], ['section.card.exo', '[data-act=tExMenu]'], ['details.folder > summary', '[data-act=tFolderMenu]'],
+  ['.rtex2', '[data-act=rteMenu]'], ['details.folder > summary', '[data-act=tFolderMenu]'],
   ['.suppcard', '[data-act=suppManage]'], ['.srow:not(.shead)', '.stype']
 ];
 // retour tactile d’un appui long : Android vibre tout de suite ; iPhone n’accepte le retour haptique
@@ -183,7 +183,8 @@ for (const ev of ['touchend', 'pointerup']) document.addEventListener(ev, () => 
       if (t.closest('#launch') && !t.closest('.sheet')) { if (!HOME_JIGGLE) { fired = Date.now(); lpHaptic(); homeJiggle(true); } return; }
       for (const [sel, btnSel] of LP_TARGETS) {
         const box = t.closest(sel); if (!box) continue;
-        const btn = box.querySelector(btnSel); if (!btn) continue;
+        let btn = box.querySelector(btnSel); if (!btn) continue;
+        if (!btn.isConnected) { const d = btn.dataset; btn = document.querySelector(`[data-act="${d.act}"]` + ['id', 'ei', 'si', 'i'].filter(k => d[k] != null).map(k => `[data-${k}="${d[k]}"]`).join('')) || btn; }
         fired = Date.now(); lpHaptic();
         btn.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true })); // pour que le petit menu s’ouvre à côté
         btn.click(); return;
@@ -191,7 +192,8 @@ for (const ev of ['touchend', 'pointerup']) document.addEventListener(ev, () => 
     }, 480);
   }, { capture: true, passive: true });
   document.addEventListener('pointermove', e => { if (timer && Math.hypot(e.clientX - sx, e.clientY - sy) > 10) cancel(); }, { passive: true });
-  for (const ev of ['pointerup', 'pointercancel', 'scroll']) document.addEventListener(ev, cancel, { capture: true, passive: true });
+  for (const ev of ['pointerup', 'touchend']) document.addEventListener(ev, cancel, { capture: true, passive: true });
+  document.addEventListener('touchmove', e => { const t = e.touches[0]; if (timer && t && Math.hypot(t.clientX - sx, t.clientY - sy) > 10) cancel(); }, { capture: true, passive: true });
   // le relâchement après un appui long ne doit pas aussi « toucher » la carte
   document.addEventListener('click', e => { if (fired && Date.now() - fired < 900 && !e.target.closest('.ctxpop, .sheet')) { e.preventDefault(); e.stopImmediatePropagation(); fired = 0; } }, true);
   document.addEventListener('contextmenu', e => { if (e.target.closest('#launch, section.card, .whist2, .rtex2, .srow, details.folder')) e.preventDefault(); });

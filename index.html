@@ -1316,6 +1316,43 @@ img, svg { -webkit-user-drag: none; }
 
 /* en-têtes de page : le titre et ses boutons tiennent toujours dans la largeur */
 #view > .row.between:first-child { flex-wrap: wrap; row-gap: 10px; }
+/* ===== batterie / chauffe : fonds fixes, pas de flou sur chaque carte ===== */
+.appbg i, .lbg i { animation: none !important; will-change: auto !important; }
+.lbg i { filter: none !important; }
+body #view .card, body #view .stat, body #view .msec, body #view .whist2, .lcard2, .ltile, .lquick button, .lset2, .lchip, .clockbtn, .btn { -webkit-backdrop-filter: none !important; backdrop-filter: none !important; }
+/* au toucher : plus d'éclaircissement, juste un léger enfoncement */
+body #view .card:active, .ltile:active, .lcard2:active, .lquick button:active, .btn:active { filter: none !important; }
+.item:active, .tip:active, .whist:active, .summary:active, .lcard2:active, .lquick button:active, .lset2:active, .ltile:active, .lchip:active { opacity: 1 !important; }
+.chip.on { color: #fff !important; }
+/* barre du haut lisible ; séance sans bande vide en haut */
+#minibar, #minibar.on { background: rgba(10, 10, 12, .97) !important; }
+.livehead { margin-top: calc(-18px - env(safe-area-inset-top)) !important; }
+/* miniatures d'exercice sur fond blanc partout */
+.exthumb, .rte-th { background: #fff !important; }
+/* fenêtres : restent sous la barre d'état ; la recherche garde sa hauteur (résultat au-dessus du clavier) */
+.sheet { max-height: calc(100% - env(safe-area-inset-top) - 14px) !important; }
+.sheet:has(#pq) { height: calc(100% - env(safe-area-inset-top) - 14px); }
+.sheet-b { overscroll-behavior: contain; }
+.rte-foot { background: linear-gradient(transparent, rgba(26, 26, 30, .98) 30%) !important; padding-bottom: 6px; }
+/* notifications : l'ancienne s'efface */
+.toast.tout { animation: none !important; opacity: 0; transform: translate(-50%, 10px) scale(.97); transition: opacity .2s, transform .2s; }
+#wiz.noanim .wiz-body > * { animation: none !important; }
+details[open] > :not(summary) { animation: fadeUp .3s cubic-bezier(.2, .8, .2, 1) both; }
+/* séance : exercice soulevé (appui long) */
+section.card.exo.exlift { transform: scale(1.02); box-shadow: 0 18px 44px rgba(0, 0, 0, .55) !important; transition: transform .18s ease; }
+/* éditeur de routine : série par série */
+.rte-sets { margin-top: 10px; }
+.rtes { display: grid; grid-template-columns: 40px 1fr 1fr 34px; gap: 8px; align-items: center; margin-top: 6px; }
+.rtes.head span { font-size: 11px; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); text-align: center; }
+.rtes input { width: 100%; height: 38px; text-align: center; border: 0; border-radius: 10px; color: inherit; font: inherit; font-weight: 650; }
+.rtes-n { display: flex; align-items: center; justify-content: center; height: 34px; border-radius: 9px; background: rgba(255, 255, 255, .08); font-weight: 700; }
+.rtes-del { border: 0; background: transparent; color: var(--muted); font-size: 15px; height: 34px; }
+.rtes-del:disabled { opacity: .25; }
+.rte-sets .addset { margin-top: 8px; }
+/* aperçu d'une routine */
+.rpv-ex { display: flex; gap: 10px; align-items: center; padding: 9px 0; border-bottom: .5px solid rgba(255, 255, 255, .08); }
+.rpv-ex b { display: block; }
+.rpv .rte-th { width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; flex: none; }
 #view > .row.between:first-child > h1 { flex: 1 1 auto; min-width: 0; }
 #view > .row.between:first-child > .row { flex-wrap: wrap; justify-content: flex-end; }
 @media (max-width: 420px) { #view > .row.between:first-child .btn.sm { padding: 8px 11px; font-size: 14px; } }
@@ -1353,6 +1390,7 @@ img, svg { -webkit-user-drag: none; }
 <script src="js/homecfg.js"></script>
 <script src="js/sheetdrag.js"></script>
 <script src="js/feel.js"></script>
+<script src="js/seance.js"></script>
 <script src="js/guide.js"></script>
 </body>
 </html>
