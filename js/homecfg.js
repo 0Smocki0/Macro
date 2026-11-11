@@ -163,7 +163,7 @@ Object.assign(ACTIONS, {
 // sur une carte qui a un menu ⋯, l’appui long ouvre ce même menu ; sur l’accueil, il ouvre la personnalisation
 const LP_TARGETS = [
   ['section.card.meal', '[data-act=mealMenu]'], ['section.card.routine', '[data-act=tRoutineMenu]'], ['.whist2', '[data-act=tWMenu]'],
-  ['.rtex2', '[data-act=rteMenu]'], ['details.folder > summary', '[data-act=tFolderMenu]'],
+  ['details.folder > summary', '[data-act=tFolderMenu]'],
   ['.suppcard', '[data-act=suppManage]'], ['.srow:not(.shead)', '.stype']
 ];
 // retour tactile d’un appui long : Android vibre tout de suite ; iPhone n’accepte le retour haptique

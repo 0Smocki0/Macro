@@ -1337,13 +1337,26 @@ body #view .card:active, .ltile:active, .lcard2:active, .lquick button:active, .
 /* notifications : l'ancienne s'efface */
 .toast.tout { animation: none !important; opacity: 0; transform: translate(-50%, 10px) scale(.97); transition: opacity .2s, transform .2s; }
 #wiz.noanim .wiz-body > * { animation: none !important; }
+/* ===== v79 ===== */
+.sheet:not(.fresh) .sheet-b > * { animation: none !important; }
+.ctxpop .menuopt > span:first-child { display: none !important; }
+.ctxpop .menuopt { justify-content: flex-start !important; }
+.chipsrow > .slide-pill { display: none !important; }
+.chipsrow > .chip.on, .slider.chipsrow > .chip.on { background: var(--accent) !important; color: #fff !important; }
+#minibar { -webkit-backdrop-filter: none !important; backdrop-filter: none !important; transform: none !important; }
+.livehead { -webkit-backdrop-filter: none !important; backdrop-filter: none !important; background: rgba(8, 8, 10, .97) !important; }
+.dragmode section.card.exo > :not(.mealhead), .dragmode .rtex2 > :not(.rte-top) { display: none !important; }
+.dragmode section.card.exo, .dragmode .rtex2 { padding-top: 10px !important; padding-bottom: 10px !important; }
+.dragging { background: #2b2b31 !important; z-index: 8; position: relative; box-shadow: 0 16px 40px rgba(0, 0, 0, .6) !important; }
+.rtes, #view .srow { touch-action: pan-y; }
+
 .lstamp { text-align: center; font-size: 11px; color: rgba(255, 255, 255, .32); margin-top: 6px; letter-spacing: .01em; }
 details[open] > :not(summary) { animation: fadeUp .3s cubic-bezier(.2, .8, .2, 1) both; }
 /* séance : exercice soulevé (appui long) */
 section.card.exo.exlift { transform: scale(1.02); box-shadow: 0 18px 44px rgba(0, 0, 0, .55) !important; transition: transform .18s ease; }
 /* éditeur de routine : série par série */
 .rte-sets { margin-top: 10px; }
-.rtes { display: grid; grid-template-columns: 40px 1fr 1fr 34px; gap: 8px; align-items: center; margin-top: 6px; }
+.rtes { display: grid; grid-template-columns: 40px 1fr 1fr; gap: 8px; align-items: center; margin-top: 6px; }
 .rtes.head span { font-size: 11px; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); text-align: center; }
 .rtes input { width: 100%; height: 38px; text-align: center; border: 0; border-radius: 10px; color: inherit; font: inherit; font-weight: 650; }
 .rtes-n { display: flex; align-items: center; justify-content: center; height: 34px; border-radius: 9px; background: rgba(255, 255, 255, .08); font-weight: 700; }
@@ -1407,9 +1420,9 @@ html { overflow-x: hidden; }
 <script src="js/homecfg.js"></script>
 <script src="js/sheetdrag.js"></script>
 <script src="js/feel.js"></script>
+<script src="js/guide.js"></script>
 <script src="js/seance.js"></script>
 <script src="js/build.js"></script>
 <script src="js/stamp.js"></script>
-<script src="js/guide.js"></script>
 </body>
 </html>
