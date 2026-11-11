@@ -1337,6 +1337,7 @@ body #view .card:active, .ltile:active, .lcard2:active, .lquick button:active, .
 /* notifications : l'ancienne s'efface */
 .toast.tout { animation: none !important; opacity: 0; transform: translate(-50%, 10px) scale(.97); transition: opacity .2s, transform .2s; }
 #wiz.noanim .wiz-body > * { animation: none !important; }
+.lstamp { text-align: center; font-size: 11px; color: rgba(255, 255, 255, .32); margin-top: 6px; letter-spacing: .01em; }
 details[open] > :not(summary) { animation: fadeUp .3s cubic-bezier(.2, .8, .2, 1) both; }
 /* séance : exercice soulevé (appui long) */
 section.card.exo.exlift { transform: scale(1.02); box-shadow: 0 18px 44px rgba(0, 0, 0, .55) !important; transition: transform .18s ease; }
@@ -1406,6 +1407,8 @@ section.card.exo.exlift { transform: scale(1.02); box-shadow: 0 18px 44px rgba(0
 <script src="js/sheetdrag.js"></script>
 <script src="js/feel.js"></script>
 <script src="js/seance.js"></script>
+<script src="js/build.js"></script>
+<script src="js/stamp.js"></script>
 <script src="js/guide.js"></script>
 </body>
 </html>
