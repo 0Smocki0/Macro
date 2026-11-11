@@ -69,17 +69,22 @@ swipeTab = (orig => function (dir) {
   const v = $('#view'); const r = v.getBoundingClientRect(); const W = innerWidth;
   const off = new DOMMatrix(getComputedStyle(v).transform).m41 || 0;
   document.querySelectorAll('.swghost').forEach(g => g.remove());
-  const g = v.cloneNode(true); g.removeAttribute('id'); g.className = 'swghost'; g.setAttribute('aria-hidden', 'true');
-  g.style.cssText = `position:fixed;left:${r.left - off}px;top:${r.top}px;width:${r.width}px;margin:0;pointer-events:none;z-index:4;transform:translate3d(${off}px,0,0)`;
-  document.body.appendChild(g);
+  // l’ancienne page est déplacée telle quelle (pas recopiée : instantané)
+  const g = document.createElement('div'); g.className = 'swghost'; g.setAttribute('aria-hidden', 'true');
+  g.style.cssText = `position:fixed;left:${r.left - off}px;top:${r.top}px;width:${r.width}px;padding:${getComputedStyle(v).padding};box-sizing:border-box;pointer-events:none;z-index:4;transform:translate3d(${off}px,0,0)`;
+  g.append(...v.childNodes); document.body.appendChild(g);
   window.SW_OUT = true;
   const res = orig.apply(this, arguments);
   v.classList.remove('swl', 'swr', 'enter');
-  v.style.transition = 'none'; v.style.opacity = ''; v.style.transform = `translate3d(${dir > 0 ? W : -W}px,0,0)`;
-  void v.offsetWidth;
-  const ease = 'transform .32s cubic-bezier(.25, .9, .3, 1)';
-  v.style.transition = ease; v.style.transform = '';
-  g.style.transition = ease; g.style.transform = `translate3d(${dir > 0 ? -W * 0.35 : W * 0.35}px,0,0)`; g.style.opacity = '0'; g.style.transition = ease + ', opacity .32s ease';
-  setTimeout(() => { g.remove(); v.style.transition = ''; window.SW_OUT = false; }, 340);
+  const start = off + (dir > 0 ? W : -W);
+  v.style.transition = 'none'; v.style.opacity = ''; v.style.transform = `translate3d(${start}px,0,0)`;
+  // on attend que la nouvelle page soit dessinée, puis les deux glissent ensemble
+  let go = false; const run = () => { if (go) return; go = true;
+    const ease = 'transform .34s cubic-bezier(.22, .9, .3, 1)';
+    v.style.transition = ease; v.style.transform = 'translate3d(0,0,0)';
+    g.style.transition = ease; g.style.transform = `translate3d(${dir > 0 ? -W : W}px,0,0)`;
+    setTimeout(() => { g.remove(); v.style.transition = ''; v.style.transform = ''; window.SW_OUT = false; }, 360);
+  };
+  requestAnimationFrame(() => requestAnimationFrame(run)); setTimeout(run, 60);
   return res;
 })(swipeTab);

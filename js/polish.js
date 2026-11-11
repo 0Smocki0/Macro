@@ -151,7 +151,7 @@ VIEWS.menus = vMenus;
   document.addEventListener('touchmove', e => {
     if (!on) return; const t = e.touches[0]; dx = t.clientX - sx; const dy = t.clientY - sy;
     if (!h) { if (Math.abs(dx) > 14 && Math.abs(dx) > Math.abs(dy) * 1.6) h = true; else if (Math.abs(dy) > 12) { on = false; return; } else return; }
-    const el = v(); el.style.transition = 'none'; el.style.willChange = 'transform'; el.style.transform = `translate3d(${dx * 0.5}px,0,0)`; el.style.opacity = String(1 - Math.min(0.3, Math.abs(dx) / 1000));
+    const el = v(); el.style.transition = 'none'; el.style.willChange = 'transform'; el.style.transform = `translate3d(${dx * 0.9}px,0,0)`; el.style.opacity = '';
   }, { passive: true });
   document.addEventListener('touchcancel', () => { on = false; const el = v(); el.style.transform = ''; el.style.opacity = ''; }, { passive: true });
   document.addEventListener('touchend', () => {
