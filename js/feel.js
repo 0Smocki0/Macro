@@ -60,13 +60,26 @@ swipeTab = (orig => function (dir) {
   return orig.apply(this, arguments);
 })(swipeTab);
 
-// ---------- 6. Changement d’onglet au doigt : l’ancienne page part sur le côté, la nouvelle arrive ----------
+// ---------- 6. Changement d’onglet au doigt : les deux pages glissent ensemble (comme un carrousel iOS) ----------
 swipeTab = (orig => function (dir) {
   const mode = S.ui.tab.startsWith('t_') ? 'train' : 'nutri';
   const list = TABS[mode].map(x => x[0]).filter(k => !k.startsWith('__'));
   const i = list.indexOf(S.ui.tab === 't_live' ? 't_home' : S.ui.tab); const j = i + dir;
-  if (i < 0 || j < 0 || j >= list.length || window.SW_OUT) return orig.apply(this, arguments);
-  const v = $('#view'); window.SW_OUT = true; const args = arguments, self = this;
-  v.style.transition = 'transform .12s ease-in, opacity .12s ease-in'; v.style.transform = `translate3d(${dir > 0 ? -38 : 38}%,0,0)`; v.style.opacity = '0';
-  setTimeout(() => { window.SW_OUT = false; v.style.transition = 'none'; v.style.transform = ''; v.style.opacity = ''; orig.apply(self, args); }, 120);
+  if (i < 0 || j < 0 || j >= list.length) return orig.apply(this, arguments);
+  const v = $('#view'); const r = v.getBoundingClientRect(); const W = innerWidth;
+  const off = new DOMMatrix(getComputedStyle(v).transform).m41 || 0;
+  document.querySelectorAll('.swghost').forEach(g => g.remove());
+  const g = v.cloneNode(true); g.removeAttribute('id'); g.className = 'swghost'; g.setAttribute('aria-hidden', 'true');
+  g.style.cssText = `position:fixed;left:${r.left - off}px;top:${r.top}px;width:${r.width}px;margin:0;pointer-events:none;z-index:4;transform:translate3d(${off}px,0,0)`;
+  document.body.appendChild(g);
+  window.SW_OUT = true;
+  const res = orig.apply(this, arguments);
+  v.classList.remove('swl', 'swr', 'enter');
+  v.style.transition = 'none'; v.style.opacity = ''; v.style.transform = `translate3d(${dir > 0 ? W : -W}px,0,0)`;
+  void v.offsetWidth;
+  const ease = 'transform .32s cubic-bezier(.25, .9, .3, 1)';
+  v.style.transition = ease; v.style.transform = '';
+  g.style.transition = ease; g.style.transform = `translate3d(${dir > 0 ? -W * 0.35 : W * 0.35}px,0,0)`; g.style.opacity = '0'; g.style.transition = ease + ', opacity .32s ease';
+  setTimeout(() => { g.remove(); v.style.transition = ''; window.SW_OUT = false; }, 340);
+  return res;
 })(swipeTab);

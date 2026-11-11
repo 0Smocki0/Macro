@@ -1365,8 +1365,9 @@ section.card.exo.exlift { transform: scale(1.02); box-shadow: 0 18px 44px rgba(0
 .ctxpop .menuopt:active { background: rgba(255, 255, 255, .12) !important; border-radius: 0 !important; }
 /* glisser entre onglets : la page entière glisse, sans réapparition des cartes */
 #view.enter.swl > *, #view.enter.swr > * { animation: none !important; }
-#view.swl { animation: vInL .28s cubic-bezier(.2, .9, .25, 1) both; }
-#view.swr { animation: vInR .28s cubic-bezier(.2, .9, .25, 1) both; }
+#view.swl, #view.swr { animation: none !important; }
+.swghost .enter > *, .swghost > * { animation: none !important; }
+html { overflow-x: hidden; }
 @keyframes vInL { from { transform: translate3d(42%, 0, 0); opacity: .35; } to { transform: none; opacity: 1; } }
 @keyframes vInR { from { transform: translate3d(-42%, 0, 0); opacity: .35; } to { transform: none; opacity: 1; } }
 #view > .row.between:first-child > h1 { flex: 1 1 auto; min-width: 0; }
