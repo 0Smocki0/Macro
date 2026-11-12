@@ -27,7 +27,7 @@ function openSwapList(di, mi, ii) {
   const cap = (S.menuPrefs.maxG || {})[it.id];
   const step = u(cur) === 'ml' || it.g >= 60 ? 10 : 5;
   openSheet(cur.name, `<div class="qtyedit">
-      <div class="row between" style="align-items:baseline"><b>Quantité</b><span class="small muted" id="vqk">${r0(nutr(cur, it.g).kcal)} kcal · P ${r0(nutr(cur, it.g).p)} g</span></div>
+      <div class="row between" style="align-items:baseline"><b>Quantité</b><span class="small muted" id="vqk">${varMacroLine(nutr(cur, it.g))}</span></div>
       <div class="qtyrow"><button class="qbtn" data-act="vqStep" data-n="-${step}" aria-label="Moins">−</button>
         <label class="qval"><input type="number" inputmode="numeric" id="vq" value="${r0(it.g)}" min="0"><span>${u(cur)}</span></label>
         <button class="qbtn" data-act="vqStep" data-n="${step}" aria-label="Plus">＋</button></div>
@@ -47,14 +47,14 @@ mkItem = (orig => function (f, role) {
 })(mkItem);
 function vqUpdate() {
   const v = VAR; if (!v || !$('#vq')) return; const it = S.plan.days[v.di].meals[v.mi].items[v.ii]; const f = food(it.id); const g = Math.max(0, num($('#vq').value));
-  const n = nutr(f, g); $('#vqk').textContent = `${r0(n.kcal)} kcal · P ${r0(n.p)} g`;
+  const n = nutr(f, g); $('#vqk').textContent = varMacroLine(n);
 }
 document.addEventListener('input', e => { if (e.target.id === 'vq') vqUpdate(); });
 function swapRowsHTML(rows) {
   const q = norm((VAR && VAR.q) || '').trim();
   const L = rows.map((r, i) => [r, i]).filter(([r]) => !q || norm(r.f.name).includes(q));
   return L.map(([r, i]) => `<button class="varrow" data-act="varPickItem" data-i="${i}"><span class="grow"><span class="vn">${esc(r.f.name)}${r.eq ? ' <span class="vtag eq">équivalent</span>' : ''}${r.have ? ' <span class="vtag">déjà dans tes courses</span>' : ''}</span>
-      <span class="vm">${r0(r.g)} ${uLabel(r.f)} · ${r0(nutr(r.f, r.g).kcal)} kcal · P ${r0(nutr(r.f, r.g).p)} g</span></span><span class="vgo">›</span></button>`).join('') || '<p class="muted">Aucun aliment ne correspond.</p>';
+      <span class="vm">${r0(r.g)} ${uLabel(r.f)} · ${varMacroLine(nutr(r.f, r.g))}</span></span><span class="vgo">›</span></button>`).join('') || '<p class="muted">Aucun aliment ne correspond.</p>';
 }
 document.addEventListener('input', e => { if (e.target.id === 'varq' && VAR) { VAR.q = e.target.value; const b = $('#varlist'); if (b) b.innerHTML = swapRowsHTML(VAR.rows); } });
 

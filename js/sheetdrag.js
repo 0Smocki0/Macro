@@ -34,6 +34,7 @@
     const body = sh.querySelector('.sheet-b'); const onTop = e.target.closest('.sheet-h, .sheet-grab');
     const t = e.touches[0]; st = { sh, body, onTop: !!onTop, x: t.clientX, y: t.clientY, t: Date.now(), dy: 0, on: false, last: [] };
     e.stopImmediatePropagation(); // remplace l’ancien geste de fermeture
+    const ae = document.activeElement; if (ae && sh.contains(ae) && ae.matches('input, textarea')) st.typing = ae;
   }, { capture: true, passive: true });
   document.addEventListener('touchmove', e => {
     if (!st) return; const t = e.touches[0]; const dx = t.clientX - st.x, dy = t.clientY - st.y;
@@ -41,6 +42,7 @@
       if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 8) { st = null; return; }
       if (dy < -4) { st = null; return; }
       if (dy > 0 && (st.onTop || !st.body || st.body.scrollTop <= 0)) e.preventDefault(); // empêche iOS de lancer le rebond // on remonte : défilement normal
+      if (dy > 6 && st.typing && !st.onTop) { st.typing.blur(); st = null; return; }
       if (dy > 6 && (st.onTop || !st.body || st.body.scrollTop <= 0)) { st.on = true; st.y = t.clientY; st.sh.style.animation = 'none'; st.sh.style.transition = 'none'; const bg = bgEl(); if (bg) bg.style.transition = 'none'; }
       else return;
     }

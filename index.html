@@ -1337,6 +1337,11 @@ body #view .card:active, .ltile:active, .lcard2:active, .lquick button:active, .
 /* notifications : l'ancienne s'efface */
 .toast.tout { animation: none !important; opacity: 0; transform: translate(-50%, 10px) scale(.97); transition: opacity .2s, transform .2s; }
 #wiz.noanim .wiz-body > * { animation: none !important; }
+/* ===== v81 ===== */
+.grid2 > .f, .grid2 > label { min-width: 0; }
+.f input[type=date], input[type=date] { min-width: 0; width: 100%; max-width: 100%; display: block; -webkit-appearance: none; appearance: none; box-sizing: border-box; }
+.sheet:has(#q), .sheet:has(#varq) { height: calc(100% - env(safe-area-inset-top) - 14px); }
+
 /* ===== v79 ===== */
 .sheet:not(.fresh) .sheet-b > * { animation: none !important; }
 .ctxpop .menuopt > span:first-child { display: none !important; }

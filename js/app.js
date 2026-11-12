@@ -18,7 +18,7 @@ const todayStr = () => dstr(new Date());
 const addDays = (s, n) => { const d = new Date(s + 'T12:00:00'); d.setDate(d.getDate() + n); return dstr(d); };
 const daysBetween = (a, b) => Math.round((new Date(b + 'T12:00:00') - new Date(a + 'T12:00:00')) / 864e5);
 const fmtDate = (s, o = { weekday: 'long', day: 'numeric', month: 'long' }) => new Date(s + 'T12:00:00').toLocaleDateString('fr-FR', o);
-const norm = s => String(s).normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+const norm = s => String(s).toLowerCase().replace(/œ/g, 'oe').replace(/æ/g, 'ae').normalize('NFD').replace(/[̀-ͯ]/g, '');
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
 const pick = arr => arr[Math.floor(Math.random() * arr.length)];
 
@@ -344,7 +344,9 @@ function renderAddResults() {
     else h += `<p class="muted small">Tape un nom d’aliment. La base intégrée contient ${BASE_FOODS.length} aliments courants ; pour les produits de marque, lance la recherche Open Food Facts ou scanne le code-barres.</p>`;
   } else {
     const words = q.split(/\s+/);
-    const loc = allFoodsList().filter(f => { const n = norm(f.name + ' ' + (f.brand || '')); return words.every(w => n.includes(w)); }).slice(0, 30);
+    const loc = allFoodsList().filter(f => { const n = norm(f.name + ' ' + (f.brand || '')); return words.every(w => n.includes(w)); })
+      .map(f => { const n = norm(f.name); const sp = ' ' + n.replace(/[^a-z0-9]+/g, ' '); const sc = words.reduce((t, w) => t + (n.startsWith(w) ? 0 : sp.includes(' ' + w) ? 1 : 3), 0); return [sc, f]; })
+      .sort((x, y) => x[0] - y[0]).map(x => x[1]).slice(0, 30);
     h += loc.length ? `<h3 class="muted" style="margin:12px 0 2px">Base intégrée & mes aliments</h3><div>${loc.map(f => foodRow(f)).join('')}</div>` : `<p class="muted small">Rien dans la base locale.</p>`;
     h += `<div class="card" style="margin-top:12px"><div class="row between"><h3>Open Food Facts</h3><span class="small muted">produits du commerce</span></div>`;
     if (A.off === 'loading') h += `<p class="muted small">Recherche…</p>`;
@@ -715,7 +717,7 @@ function vMenus() {
     <button class="btn sm" data-act="planToJournal" data-day="${di}">→ Journal</button></div>`;
   day.meals.forEach((m, mi) => {
     const mt = sum(m.items.map(it => nutr(food(it.id), it.g)));
-    h += `<section class="card meal"><div class="mealhead"><div><h2>${MEAL_LABEL[m.key]}</h2><div class="small muted">${r0(mt.kcal)} kcal · P ${r0(mt.p)} g</div></div>
+    h += `<section class="card meal"><div class="mealhead"><div><h2>${MEAL_LABEL[m.key]}</h2><div class="small muted">${r0(mt.kcal)} kcal · P ${r0(mt.p)} · G ${r0(mt.c)} · L ${r0(mt.f)}</div></div>
       <div class="row" style="gap:4px"><button class="iconbtn" data-act="regenMeal" data-day="${di}" data-meal="${mi}" aria-label="Changer ce repas" title="Changer ce repas">↻</button>
       <button class="addbtn" data-act="planAdd" data-day="${di}" data-meal="${mi}" aria-label="Ajouter un aliment à ce repas">＋</button></div></div>`;
     if (typeof batchBadge === 'function') h += batchBadge(di, mi, m);
