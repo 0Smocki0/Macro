@@ -1329,6 +1329,8 @@ body #view .card:active, .ltile:active, .lcard2:active, .lquick button:active, .
 .livehead { margin-top: calc(-18px - env(safe-area-inset-top)) !important; }
 /* miniatures d'exercice sur fond blanc partout */
 .exthumb, .rte-th { background: #fff !important; }
+.rte-th, .rpv .rte-th { width: 44px !important; height: 44px !important; border-radius: 50% !important; display: flex; align-items: center; justify-content: center; overflow: hidden; flex: none; }
+.rte-th svg { width: 30px !important; height: auto; }
 /* fenêtres : restent sous la barre d'état ; la recherche garde sa hauteur (résultat au-dessus du clavier) */
 .sheet { max-height: calc(100% - env(safe-area-inset-top) - 14px) !important; }
 .sheet:has(#pq) { height: calc(100% - env(safe-area-inset-top) - 14px); }
