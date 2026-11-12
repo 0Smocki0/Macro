@@ -133,14 +133,14 @@ for (const [k, act] of [['tExMenu', 'tExMove'], ['rteMenu', 'tRtMove']]) ACTIONS
   try { return orig(el, e); } finally { openSheet = o; }
 })(ACTIONS[k]);
 // les fenêtres n’animent leur contenu qu’à l’ouverture (pas à chaque retouche)
-openSheet = (orig => function () { const r = orig.apply(this, arguments); const sh = document.querySelector('#modal .sheet'); if (sh) { sh.classList.add('fresh'); setTimeout(() => sh.classList.remove('fresh'), 450); } return r; })(openSheet);
+openSheet = (orig => function () { const r = orig.apply(this, arguments); const sh = document.querySelector('#modal .sheet'); if (sh && !document.querySelector('.ctxpop:not(.out)')) { sh.classList.add('fresh'); setTimeout(() => sh.classList.remove('fresh'), 450); } return r; })(openSheet);
 
 // ---------- routines : toucher la carte = aperçu (sans lancer la séance) ----------
 function routinePreview(id) {
   const r = TS.routines.find(x => x.id === id); if (!r) return;
   const rows = r.exercises.map(e => {
     const X = exById(e.exId); const n = e.plan && e.plan.length ? e.plan.length : (+e.sets || 3);
-    const det = e.plan && e.plan.some(p => p.w || p.r) ? e.plan.map(p => `${p.w ? fr(num(p.w)) + ' kg' : '–'} × ${p.r || e.reps || '–'}`).join(' · ') : `${n} série${n > 1 ? 's' : ''}${e.reps ? ` · ${esc(e.reps)} réps` : ''}`;
+    const det = e.plan && e.plan.some(p => p.w || p.r) ? e.plan.map(p => `${p.type === 'w' ? 'É ' : ''}${p.w ? fr(num(p.w)) + ' kg' : '–'} × ${p.r || e.reps || '–'}`).join(' · ') : `${n} série${n > 1 ? 's' : ''}${e.reps ? ` · ${esc(e.reps)} réps` : ''}`;
     return `<div class="rpv-ex">${typeof muscleMapSVG === 'function' ? `<span class="rte-th">${muscleMapSVG(X, true)}</span>` : ''}<div class="grow" style="min-width:0"><b>${esc(exLabel(X))}</b><span class="small muted">${det}</span></div></div>`;
   }).join('');
   openSheet(r.name, `<div class="rpv">${rows || '<p class="muted">Aucun exercice.</p>'}</div>
@@ -167,8 +167,8 @@ renderRoutineEditor = (orig => function () {
     const b = boxes[i]; if (!b) return; const f = b.querySelector('.rte-f'); if (f) f.remove();
     const lo = repsSplit(e.reps)[0];
     b.querySelector('.rte-grid').insertAdjacentHTML('afterend', `<div class="rte-sets"><div class="rtes head"><span>Série</span><span>kg</span><span>réps</span></div>
-      ${e.plan.map((p, si) => `<div class="rtes"><span class="rtes-n">${si + 1}</span><input type="number" inputmode="decimal" data-rpw="${i}" data-si="${si}" value="${esc(p.w ?? '')}" placeholder="–"><input type="number" inputmode="numeric" data-rpr="${i}" data-si="${si}" value="${esc(p.r ?? '')}" placeholder="${esc(lo || '–')}"></div>`).join('')}
-      <button class="btn sm block addset" data-act="rtSetAdd" data-i="${i}">＋ Ajouter une série</button></div>`);
+      ${(() => { let k = 0; return e.plan.map((p, si) => { const w = p.type === 'w'; if (!w) k++; return `<div class="rtes${w ? ' warm' : ''}"><button class="rtes-n" data-act="rtSetType" data-i="${i}" data-si="${si}" aria-label="Série d’échauffement ou normale">${w ? 'É' : k}</button><input type="number" inputmode="decimal" data-rpw="${i}" data-si="${si}" value="${esc(p.w ?? '')}" placeholder="–"><input type="number" inputmode="numeric" data-rpr="${i}" data-si="${si}" value="${esc(p.r ?? '')}" placeholder="${esc(lo || '–')}"></div>`; }).join(''); })()}
+      <button class="btn sm block addset" data-act="rtSetAdd" data-i="${i}">＋ Ajouter une série</button>${i === 0 ? '<div class="rtes-tip">Touche le numéro d’une série pour en faire un échauffement (É).</div>' : ''}</div>`);
   });
   const nb = $('#sheetBody'); if (nb) nb.scrollTop = keep;
 })(renderRoutineEditor);
@@ -177,14 +177,15 @@ document.addEventListener('input', e => {
   const p = RT.exercises[+i].plan[+el.dataset.si]; if (el.dataset.rpw != null) p.w = el.value; else p.r = el.value;
 });
 Object.assign(ACTIONS, {
-  rtSetAdd: el => { const e = RT.exercises[+el.dataset.i]; const l = e.plan[e.plan.length - 1]; e.plan.push(l ? { ...l } : { w: '', r: '' }); e.sets = e.plan.length; renderRoutineEditor(); rteRefresh(); },
+  rtSetType: el => { const p = RT.exercises[+el.dataset.i].plan[+el.dataset.si]; if (p.type === 'w') delete p.type; else p.type = 'w'; haptic([10]); renderRoutineEditor(); rteRefresh(); },
+  rtSetAdd: el => { const e = RT.exercises[+el.dataset.i]; const l = e.plan[e.plan.length - 1]; e.plan.push(l ? { w: l.w, r: l.r } : { w: '', r: '' }); e.sets = e.plan.length; renderRoutineEditor(); rteRefresh(); },
   rtSetDel: el => { const e = RT.exercises[+el.dataset.i]; if (e.plan.length < 2) return; e.plan.splice(+el.dataset.si, 1); e.sets = e.plan.length; renderRoutineEditor(); rteRefresh(); }
 });
 // au démarrage : les kg / répétitions prévus remplissent les séries
 ACTIONS.tStartRoutine = (orig => el => {
   orig(el); const r = TS.routines.find(x => x.id === el.dataset.id); if (!r || !TS.active || TS.active.routineId !== r.id) return;
   let ch = false;
-  r.exercises.forEach((e, i) => { const a = TS.active.exercises[i]; if (!a || !e.plan || !e.plan.length) return; a.sets = e.plan.map(p => ({ type: 'n', w: p.w ?? '', r: p.r ?? '', t: '', km: '', done: false })); ch = true; });
+  r.exercises.forEach((e, i) => { const a = TS.active.exercises[i]; if (!a || !e.plan || !e.plan.length) return; a.sets = e.plan.map(p => ({ type: p.type === 'w' ? 'w' : 'n', w: p.w ?? '', r: p.r ?? '', t: '', km: '', done: false })); ch = true; });
   if (ch) { tsave(); render(); }
 })(ACTIONS.tStartRoutine);
 
@@ -196,7 +197,7 @@ finishWorkout = (orig => async function () {
     const changed = done.length && (done.length !== r.exercises.length || done.some((e, i) => e.exId !== r.exercises[i].exId || e.sets.length !== (r.exercises[i].plan ? r.exercises[i].plan.length : +r.exercises[i].sets || 3)));
     if (changed && await askConfirm('Mettre à jour la routine ?', { msg: `« ${r.name} » reprendra les exercices et le nombre de séries de cette séance.`, ok: 'Mettre à jour', cancel: 'Garder telle quelle' })) {
       r.exercises = done.map(e => { const old = r.exercises.find(o => o.exId === e.exId) || {}; const X = exById(e.exId); const lift = X.kind === 'wr' || X.kind === 'bw';
-        const n = { ...old, exId: e.exId, sets: e.sets.length }; if (lift) n.plan = e.sets.map(s => ({ w: s.w ?? '', r: s.r ?? '' })); else delete n.plan; return n; });
+        const n = { ...old, exId: e.exId, sets: e.sets.length }; if (lift) n.plan = e.sets.map(s => ({ w: s.w ?? '', r: s.r ?? '', ...(s.type === 'w' ? { type: 'w' } : {}) })); else delete n.plan; return n; });
       tsave(); toast('Routine mise à jour');
     }
   }

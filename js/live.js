@@ -308,3 +308,41 @@ openSheet = (orig => function (t, b) {
   }
   return orig.call(this, t, b);
 })(openSheet);
+
+// ---------- 12. Éditeur de routine : fenêtre « temps de repos » par-dessus l’éditeur (rien ne se ferme derrière) ----------
+function openRestPick(cur, onSet, compound) {
+  qa('.rp-bg, .rp-card').forEach(x => x.remove());
+  let v = cur || 0; const PRE = [0, 30, 45, 60, 90, 120, 150, 180, 240, 300];
+  const bg = document.createElement('div'); bg.className = 'rp-bg';
+  const card = document.createElement('div'); card.className = 'rp-card'; card.setAttribute('role', 'dialog');
+  const lab = x => x ? (x < 60 ? `${x} s` : `${Math.floor(x / 60)} min${x % 60 ? ' ' + z2(x % 60) : ''}`) : 'Aucun';
+  const draw = () => {
+    card.innerHTML = `<div class="rp-grab"></div><div class="rp-t">Temps de repos</div>
+      <div class="rp-val"><button data-rp="-15" aria-label="Moins 15 secondes">−15</button><b>${clock(v * 1000)}</b><button data-rp="15" aria-label="Plus 15 secondes">+15</button></div>
+      <div class="rp-grid">${PRE.map(x => `<button data-rpv="${x}" class="${x === v ? 'on' : ''}">${lab(x)}</button>`).join('')}</div>
+      <div class="rp-hint">${compound ? 'Gros exercice : 2 à 3 min conseillées pour garder ta force.' : 'Exercice d’isolation : 1 à 2 min suffisent.'}</div>
+      <div class="rp-foot"><button class="btn" data-rpx="0">Annuler</button><button class="btn primary grow" data-rpx="1">Valider · ${lab(v)}</button></div>`;
+  };
+  const close = ok => { if (ok) onSet(v); card.classList.add('out'); bg.classList.add('out'); setTimeout(() => { card.remove(); bg.remove(); }, 230); };
+  draw(); document.body.append(bg, card);
+  bg.addEventListener('click', () => close(false));
+  card.addEventListener('click', e => {
+    e.stopPropagation(); const b = e.target.closest('button'); if (!b) return;
+    if (b.dataset.rp) { v = Math.max(0, Math.min(600, v + +b.dataset.rp)); haptic([8]); draw(); }
+    else if (b.dataset.rpv != null) { v = +b.dataset.rpv; haptic([8]); draw(); }
+    else if (b.dataset.rpx != null) close(b.dataset.rpx === '1');
+  });
+  // glisser vers le bas pour fermer
+  let y0 = null;
+  card.addEventListener('touchstart', e => { if (!e.target.closest('button')) y0 = e.touches[0].clientY; }, { passive: true });
+  card.addEventListener('touchmove', e => { if (y0 == null) return; const d = Math.max(0, e.touches[0].clientY - y0); card.style.transition = 'none'; card.style.transform = `translateY(${d}px)`; }, { passive: true });
+  card.addEventListener('touchend', e => { if (y0 == null) return; const d = e.changedTouches[0].clientY - y0; y0 = null; card.style.transition = ''; card.style.transform = ''; if (d > 80) close(false); }, { passive: true });
+}
+ACTIONS.rteRest = el => {
+  const i = +el.dataset.i; const e = RT.exercises[i];
+  openRestPick(rteRest(e), v => {
+    e.rest = v; const b = qa('#sheetBody [data-act=rteRest]').find(x => +x.dataset.i === i);
+    if (b) { b.textContent = '⏱ ' + (v ? restLabel(v) : 'aucun'); b.classList.remove('bump'); void b.offsetWidth; b.classList.add('bump'); }
+    rteRefresh();
+  }, isCompound(exById(e.exId)));
+};

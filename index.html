@@ -1382,6 +1382,33 @@ body.in-live, body.in-live #view { touch-action: pan-y; overscroll-behavior-x: n
 .dragmode section.card.exo, .dragmode .rtex2 { will-change: transform; }
 .dragmode .rtex2.dragging, .dragmode section.card.exo.dragging { box-shadow: 0 12px 30px rgba(0,0,0,.45); }
 #sheetBody.dragmode { overscroll-behavior: contain; }
+/* v90 : éditeur de routine */
+.rte-foot { bottom: -22px !important; margin: 8px -18px -22px !important; padding: 18px 18px 22px !important; background: linear-gradient(rgba(24, 24, 28, 0), rgba(24, 24, 28, .97) 30%) !important; }
+button.rtes-n { border: 0; color: inherit; font: inherit; font-weight: 700; cursor: pointer; width: 100%; }
+.rtes.warm .rtes-n { background: rgba(255, 159, 10, .22); color: #ff9f0a; }
+.rtes.warm input { opacity: .75; }
+.rtes-tip { font-size: 12px; color: var(--muted); text-align: center; margin-top: 8px; }
+.rp-bg { position: fixed; inset: 0; z-index: 60; background: rgba(0, 0, 0, .45); animation: rpFade .22s ease both; }
+.rp-card { position: fixed; left: 10px; right: 10px; bottom: calc(10px + env(safe-area-inset-bottom)); z-index: 61; max-width: 520px; margin: 0 auto; background: #1c1c1f; border: 1px solid rgba(255, 255, 255, .08); border-radius: 28px; padding: 8px 16px 16px; box-shadow: 0 -10px 40px rgba(0, 0, 0, .55); animation: rpUp .34s cubic-bezier(.2, .9, .3, 1.05) both; transition: transform .25s cubic-bezier(.2, .9, .3, 1); }
+.rp-card.out { animation: rpDown .23s cubic-bezier(.4, 0, 1, 1) both; }
+.rp-bg.out { animation: rpOut .23s ease both; }
+@keyframes rpUp { from { transform: translateY(110%); } }
+@keyframes rpDown { to { transform: translateY(115%); } }
+@keyframes rpFade { from { opacity: 0; } }
+@keyframes rpOut { to { opacity: 0; } }
+.rp-grab { width: 38px; height: 5px; border-radius: 3px; background: rgba(255, 255, 255, .2); margin: 0 auto 10px; }
+.rp-t { text-align: center; font-weight: 700; font-size: 17px; }
+.rp-val { display: flex; align-items: center; justify-content: center; gap: 18px; margin: 14px 0 16px; }
+.rp-val b { font-size: 46px; font-weight: 300; font-variant-numeric: tabular-nums; min-width: 130px; text-align: center; }
+.rp-val button { width: 56px; height: 56px; border-radius: 50%; border: 0; background: #2c2c30; color: #fff; font-weight: 700; font-size: 16px; cursor: pointer; }
+.rp-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 7px; }
+.rp-grid button { border: 0; border-radius: 13px; padding: 11px 2px; background: #2c2c30; color: #fff; font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap; }
+.rp-grid button.on { background: var(--accent); }
+.rp-hint { font-size: 12px; color: var(--muted); text-align: center; margin: 12px 0 14px; }
+.rp-foot { display: flex; gap: 8px; }
+.rte-rest.bump { animation: rbump .4s ease; }
+@keyframes rbump { 40% { transform: scale(1.08); background: var(--accent); color: #fff; } }
+
 #restbar.closing { animation: rbOut .32s cubic-bezier(.4, 0, .9, .6) forwards !important; pointer-events: none; }
 @keyframes rbOut { to { opacity: 0; transform: translateY(46px) scale(.9); } }
 #restbar .rb-nt { text-align: center; font-size: 12px; color: rgba(255,255,255,.55); margin-top: 10px; }
