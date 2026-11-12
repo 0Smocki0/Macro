@@ -88,14 +88,17 @@ if (typeof renderWiz === 'function') renderWiz = (orig => function () {
       st.cards.forEach(c => { c.style.transition = c === st.card ? 'none' : 'transform .2s cubic-bezier(.2,.9,.3,1)'; });
     }
     st.ty = t.clientY; if (!st.raf) { const loop = () => { if (!st || !st.drag) return; move(); st.raf = requestAnimationFrame(loop); }; st.raf = requestAnimationFrame(loop); }
-    move();
   }, { capture: true, passive: false });
   // position du doigt → bande déplacée + voisines décalées ; défilement continu près des bords (vitesse selon la proximité)
   function move() {
     const K = st.K, sc = K.scroller(), y = st.ty;
-    const box = sc ? sc.getBoundingClientRect() : { top: 0, bottom: innerHeight };
-    const up = box.top + 80 - y, dn = y - (box.bottom - 120);
-    if (up > 0) { const v = Math.min(14, up / 6); if (sc) sc.scrollTop -= v; else scrollBy(0, -v); } else if (dn > 0) { const v = Math.min(14, dn / 6); if (sc) sc.scrollTop += v; else scrollBy(0, v); }
+    if (!st.edge) {
+      const b = sc ? sc.getBoundingClientRect() : { top: 0, bottom: innerHeight }; let top = b.top, bot = b.bottom;
+      if (!sc) { const hd = $('.livehead'); if (hd) top = Math.max(top, hd.getBoundingClientRect().bottom); for (const q of ['#tabs', '#restbar']) { const e = $(q); if (e) { const r = e.getBoundingClientRect(); if (r.height && r.top > innerHeight / 2) bot = Math.min(bot, r.top); } } }
+      st.edge = { top, bot };
+    }
+    const up = st.edge.top + 110 - y, dn = y - (st.edge.bot - 110);
+    if (up > 0) { const v = Math.min(22, 3 + up / 5); if (sc) sc.scrollTop -= v; else scrollBy(0, -v); } else if (dn > 0) { const v = Math.min(22, 3 + dn / 5); if (sc) sc.scrollTop += v; else scrollBy(0, v); }
     const dy = y + sTop(sc) - st.y0; st.dy = dy; st.card.style.transform = `translate3d(0,${dy}px,0) scale(1.03)`;
     const R = st.rects, me = R[st.from]; const mid = me.top + dy + me.h / 2; let to = st.from;
     for (let j = 0; j < R.length; j++) { if (j === st.from) continue; const m = R[j].top + R[j].h / 2; if (j > st.from && mid > m) to = Math.max(to, j); if (j < st.from && mid < m) to = Math.min(to, j); }

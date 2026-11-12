@@ -40,13 +40,13 @@ function raEl() {
   el.addEventListener('ended', () => { RA.end = 0; RA.bellAt = 0; });
   return el;
 }
-function raSession() { try { if (navigator.audioSession) navigator.audioSession.type = TS.settings.mixMusic ? 'ambient' : 'playback'; } catch (e) { } }
+function raSession() { try { if (navigator.audioSession) navigator.audioSession.type = TS.settings.bellLoud ? 'playback' : 'ambient'; } catch (e) { } }
 function raPlay(silence) {
   const el = raEl(); raSession();
   if (RA.url) URL.revokeObjectURL(RA.url);
   RA.url = wavURL(silence); el.src = RA.url; RA.bellAt = silence; RA.rang = false;
   const p = el.play(); if (p && p.catch) p.catch(() => { RA.end = 0; RA.bellAt = 0; });
-  try { if ('mediaSession' in navigator && window.MediaMetadata) navigator.mediaSession.metadata = new MediaMetadata({ title: 'Repos en cours', artist: 'Macro', artwork: [{ src: 'icons/icon-192.png', sizes: '192x192' }] }); } catch (e) { }
+  if (TS.settings.bellLoud) try { if ('mediaSession' in navigator && window.MediaMetadata) navigator.mediaSession.metadata = new MediaMetadata({ title: 'Repos en cours', artist: 'Macro', artwork: [{ src: 'icons/icon-192.png', sizes: '192x192' }] }); } catch (e) { }
 }
 // à appeler après chaque geste : la piste suit le minuteur (démarrage, ±15 s, passer…)
 function raSync() {
@@ -83,6 +83,14 @@ beep = function () {
 };
 startRest = (orig => function (sec) { const r = orig.apply(this, arguments); raSync(); askNotif(); return r; })(startRest);
 
+// pendant la séance : pas de glissement vers un autre onglet
+swipeTab = (orig => function () { if (S.ui.tab === 't_live') { const v = $('#view'); v.style.transform = ''; return; } return orig.apply(this, arguments); })(swipeTab);
+// vibration iPhone : interrupteur natif (iOS 18+), créé et touché pendant le geste ; une impulsion par appel
+haptic = function (pattern = [30]) {
+  try { if (navigator.vibrate && navigator.vibrate(pattern)) return; } catch (e) { }
+  try { const l = document.createElement('label'); l.ariaHidden = 'true'; l.style.display = 'none'; const i = document.createElement('input'); i.type = 'checkbox'; i.setAttribute('switch', ''); l.appendChild(i); document.head.appendChild(l); l.click(); l.remove(); } catch (e) { }
+};
+
 // ---------- 2. Minuteur réductible, couleurs inversées, rappel partout ----------
 ACTIONS.tRestMini = () => { S.ui.rbMini = !S.ui.rbMini; save(); restDecor(); };
 function restDecor() {
@@ -93,6 +101,7 @@ function restDecor() {
     const t = bar.querySelector('.rb-time'); if (t) t.dataset.act = 'tRestMini';
   }
   bar.classList.toggle('mini', !!S.ui.rbMini || S.ui.tab !== 't_live');
+  document.body.classList.toggle('in-live', S.ui.tab === 't_live');
 }
 setInterval(restDecor, 250);
 render = (orig => function () { const r = orig.apply(this, arguments); try { restDecor(); crowns(); } catch (e) { } return r; })(render);
@@ -228,7 +237,7 @@ document.addEventListener('focusin', e => {
 // ---------- 10. Réglage : laisser la musique jouer ----------
 openSheet = (orig => function (t, b) {
   if (typeof b === 'string' && b.includes('id="t_restOn"') && !b.includes('id="t_mix"'))
-    b = b.replace(/(<label class="check"[^>]*><input type="checkbox" id="t_restOn"[\s\S]*?<\/label>)/, `$1<label class="check" style="border:0;padding-top:0"><input type="checkbox" id="t_mix" ${TS.settings.mixMusic ? 'checked' : ''}><div class="grow">Laisser ma musique jouer<div class="small muted">La cloche suit alors le mode silencieux. Sinon elle sonne toujours (selon le volume) mais met la musique en pause pendant le repos.</div></div></label>`);
+    b = b.replace(/(<label class="check"[^>]*><input type="checkbox" id="t_restOn"[\s\S]*?<\/label>)/, `$1<label class="check" style="border:0;padding-top:0"><input type="checkbox" id="t_mix" ${TS.settings.bellLoud ? 'checked' : ''}><div class="grow">Cloche même en mode silencieux<div class="small muted">Met ta musique en pause pendant le repos (limite d’iPhone). Désactivé : la cloche sonne par-dessus la musique, mais se tait en mode silencieux.</div></div></label>`);
   return orig.call(this, t, b);
 })(openSheet);
-document.addEventListener('change', e => { if (e.target && e.target.id === 't_mix') { TS.settings.mixMusic = e.target.checked; tsave(); raSession(); } });
+document.addEventListener('change', e => { if (e.target && e.target.id === 't_mix') { TS.settings.bellLoud = e.target.checked; tsave(); raSession(); } });

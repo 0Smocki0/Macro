@@ -146,7 +146,7 @@ VIEWS.menus = vMenus;
 // ---------- 6. Glisser entre les onglets : la page suit le doigt puis glisse ----------
 (function swipeFollow() {
   let sx = 0, sy = 0, on = false, h = false, dx = 0; const v = () => $('#view');
-  const blocked = t => $('#modal').firstElementChild || $('#launch') || $('#wiz') || t.closest('.daystrip, .chipsrow, .srow, input, textarea, select, .exstage, nav.tabs, .wchart, .pgchart, .wheel, .seg, .cal');
+  const blocked = t => S.ui.tab === 't_live' || $('#modal').firstElementChild || $('#launch') || $('#wiz') || t.closest('.daystrip, .chipsrow, .srow, input, textarea, select, .exstage, nav.tabs, .wchart, .pgchart, .wheel, .seg, .cal');
   document.addEventListener('touchstart', e => { if (e.touches.length !== 1 || blocked(e.target)) { on = false; return; } const t = e.touches[0]; sx = t.clientX; sy = t.clientY; on = true; h = false; dx = 0; }, { passive: true });
   document.addEventListener('touchmove', e => {
     if (!on) return; const t = e.touches[0]; dx = t.clientX - sx; const dy = t.clientY - sy;

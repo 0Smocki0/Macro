@@ -1375,6 +1375,15 @@ body.has-livebar #restbar.mini { bottom: calc(152px + env(safe-area-inset-bottom
 section.card.exo.dropped { animation: dropIn .45s ease-out; }
 @keyframes dropIn { from { box-shadow: 0 0 0 2px var(--accent); } }
 section.card.exo.dragging, .rtex2.dragging { will-change: transform; }
+/* v86 */
+#restbar .rb-min { padding: 0; }
+#restbar .rb-min svg { display: block; }
+body.in-live, body.in-live #view { touch-action: pan-y; overscroll-behavior-x: none; }
+.dragmode section.card.exo, .dragmode .rtex2 { will-change: transform; }
+.dragmode .rtex2.dragging, .dragmode section.card.exo.dragging { box-shadow: 0 12px 30px rgba(0,0,0,.45); }
+#sheetBody.dragmode { overscroll-behavior: contain; }
+.sheet:has(#sheetBody.dragmode) { -webkit-backdrop-filter: none !important; backdrop-filter: none !important; }
+.dragmode .rtex2:not(.dragging) { box-shadow: none !important; }
 
 /* animation photo du mouvement (deux images qui alternent) */
 .exanim { position: relative; width: 100%; aspect-ratio: 4 / 3; max-height: 300px; background: #fff; border-radius: 18px; overflow: hidden; margin: 2px 0 12px; }
