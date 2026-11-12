@@ -103,7 +103,7 @@ function restDecor() {
   }
   bar.classList.toggle('mini', !!S.ui.rbMini || S.ui.tab !== 't_live');
   const c = TS.settings.ntfy; let nt = bar.querySelector('.rb-nt');
-  const st = !c || !c.on || !TS.rest || (TS.rest.end - Date.now() < 11000 && NT.ok !== TS.rest.end) ? '' : NT.ok === TS.rest.end ? 'ok' : NT.ok === -1 ? 'err' : 'wait';
+  const st = !c || !c.on || !TS.rest || (TS.rest.end - Date.now() < 13000 && NT.ok !== TS.rest.end) ? '' : NT.ok === TS.rest.end ? 'ok' : NT.ok === -1 ? 'err' : 'wait';
   if (st && !nt) { bar.insertAdjacentHTML('beforeend', '<div class="rb-nt"></div>'); nt = bar.querySelector('.rb-nt'); }
   if (nt && nt.dataset.s !== st) { nt.dataset.s = st; nt.textContent = st === 'ok' ? 'Alerte programmée sur ntfy' : st === 'err' ? 'Alerte non envoyée (pas de réseau ?)' : st === 'wait' ? 'Envoi de l’alerte…' : ''; }
   document.body.classList.toggle('in-live', S.ui.tab === 't_live');
@@ -264,13 +264,15 @@ const NT = (() => { try { return JSON.parse(localStorage.getItem('macro.nt')) ||
 const ntSave = () => { try { localStorage.setItem('macro.nt', JSON.stringify(NT)); } catch (e) { } };
 const ntCfg = () => TS.settings.ntfy || (TS.settings.ntfy = { on: false, topic: 'macro-' + Array.from(crypto.getRandomValues(new Uint8Array(9)), b => 'abcdefghijkmnpqrstuvwxyz23456789'[b % 32]).join('') });
 const ntURL = () => 'https://ntfy.sh/' + encodeURIComponent(ntCfg().topic);
-function ntSend(end, seq = 'r' + end) {
-  // keepalive : la requête part même si l’écran est verrouillé juste après
-  // paramètres dans l’adresse (accents corrects, pas de pré-requête CORS)
-  const q = new URLSearchParams({ title: 'Repos terminé', priority: '5', tags: 'bell', at: String(Math.round(end / 1000)) });
-  return fetch(ntURL() + '/' + seq + '?' + q, { method: 'POST', keepalive: true, body: 'Série suivante !' })
-    .then(r => { if (seq !== 'test') { NT.ok = r.ok ? end : -1; ntSave(); } return r; })
-    .catch(() => { if (seq !== 'test') { NT.ok = -1; ntSave(); } });
+function ntSend(end, test) {
+  // chaque envoi est un message neuf (identifiant donné par ntfy) : l’iPhone l’annonce toujours.
+  // (un identifiant réutilisé = « mise à jour » silencieuse côté appli ntfy)
+  // keepalive : la requête part même si l’écran est verrouillé juste après ; paramètres dans l’adresse (accents, pas de pré-requête)
+  const q = new URLSearchParams({ title: test ? 'Test Macro' : 'Repos terminé', priority: '5', tags: 'bell', at: String(Math.round(end / 1000)) });
+  return fetch(ntURL() + '?' + q, { method: 'POST', keepalive: true, body: test ? 'Les alertes de fin de repos fonctionnent.' : 'Série suivante !' })
+    .then(r => r.ok ? r.json() : Promise.reject())
+    .then(j => { if (test) return; if (NT.end !== end) { ntCancel(j.id); return; } NT.ok = end; NT.id = j.id; ntSave(); })
+    .catch(() => { if (!test && NT.end === end) { NT.ok = -1; ntSave(); } });
 }
 // ntfy.sh enregistre les messages par lots : une annulation trop rapide peut être ratée, on la répète
 function ntCancel(seq) { const go = () => fetch(ntURL() + '/' + seq, { method: 'DELETE' }).catch(() => { }); go(); setTimeout(go, 3000); setTimeout(go, 8000); }
@@ -278,10 +280,10 @@ function ntSync() {
   const c = TS.settings.ntfy; if (!c || !c.on) return;
   // une notification par repos ; si le temps change ou si on passe, l’ancienne est annulée
   if (TS.rest) {
-    if (TS.rest.end !== NT.end) { if (NT.end && Date.now() < NT.end - 1500) ntCancel('r' + NT.end); NT.end = TS.rest.end; NT.ok = 0; ntSave(); if (NT.end - Date.now() > 11000) ntSend(NT.end); }
-    else if (NT.ok === -1 && NT.end - Date.now() > 11000 && !NT.retry) { NT.retry = 1; ntSend(NT.end).finally(() => { NT.retry = 0; }); } // nouvel essai si l’envoi a échoué
+    if (TS.rest.end !== NT.end) { if (NT.id && Date.now() < NT.end - 1500) ntCancel(NT.id); NT.end = TS.rest.end; NT.ok = 0; NT.id = ''; ntSave(); if (NT.end - Date.now() > 13000) ntSend(NT.end); }
+    else if (NT.ok === -1 && NT.end - Date.now() > 13000 && !NT.retry) { NT.retry = 1; ntSend(NT.end).finally(() => { NT.retry = 0; }); } // nouvel essai si l’envoi a échoué
   }
-  else if (NT.end) { if (Date.now() < NT.end - 1500) ntCancel('r' + NT.end); NT.end = 0; NT.ok = 0; ntSave(); }
+  else if (NT.end) { if (NT.id && Date.now() < NT.end - 1500) ntCancel(NT.id); NT.end = 0; NT.ok = 0; NT.id = ''; ntSave(); }
 }
 setInterval(() => { try { ntSync(); } catch (e) { } }, 1000);
 function ntSheet() {
@@ -290,12 +292,12 @@ function ntSheet() {
     <ol class="ntsteps"><li>Installe l’appli gratuite <b>ntfy</b> depuis l’App Store.</li><li>Dans ntfy : <b>＋</b> → nom du sujet ci-dessous → <b>Subscribe</b>, puis autorise les notifications.</li><li>Active l’alerte ici et touche « Tester ».</li></ol>
     <div class="nttopic"><code id="ntTopic">${esc(c.topic)}</code><button class="btn sm" data-act="ntCopy">Copier</button></div>
     <label class="check" style="border:0"><input type="checkbox" id="nt_on" ${c.on ? 'checked' : ''}><div class="grow">Activer l’alerte de fin de repos</div></label>
-    <button class="btn block" data-act="ntTest">Tester (notification dans 10 s)</button>
+    <button class="btn block" data-act="ntTest">Tester (notification dans 15 s)</button>
     <p class="small muted" style="margin:12px 0 0">Seuls « Repos terminé » et l’heure de fin sont envoyés à ntfy.sh. Le nom du sujet est aléatoire : garde-le pour toi.</p>`);
 }
 ACTIONS.ntOpen = () => ntSheet();
 ACTIONS.ntCopy = () => { try { navigator.clipboard.writeText(ntCfg().topic); toast('Sujet copié'); } catch (e) { toast(ntCfg().topic); } };
-ACTIONS.ntTest = () => { const c = ntCfg(); if (!c.on) { c.on = true; tsave(); const cb = $('#nt_on'); if (cb) cb.checked = true; } ntSend(Date.now() + 10500, 'test'); toast('Notification de test dans 10 s : verrouille le téléphone pour voir'); };
+ACTIONS.ntTest = () => { const c = ntCfg(); if (!c.on) { c.on = true; tsave(); const cb = $('#nt_on'); if (cb) cb.checked = true; } ntSend(Date.now() + 15000, true); toast('Notification de test dans 15 s : verrouille le téléphone pour voir'); };
 document.addEventListener('change', e => { if (e.target && e.target.id === 'nt_on') { ntCfg().on = e.target.checked; tsave(); toast(e.target.checked ? 'Alerte activée' : 'Alerte désactivée'); } });
 // lien dans les réglages du minuteur
 openSheet = (orig => function (t, b) {
