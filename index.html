@@ -1337,6 +1337,12 @@ body #view .card:active, .ltile:active, .lcard2:active, .lquick button:active, .
 /* notifications : l'ancienne s'efface */
 .toast.tout { animation: none !important; opacity: 0; transform: translate(-50%, 10px) scale(.97); transition: opacity .2s, transform .2s; }
 #wiz.noanim .wiz-body > * { animation: none !important; }
+/* animation photo du mouvement (deux images qui alternent) */
+.exanim { position: relative; width: 100%; aspect-ratio: 4 / 3; max-height: 300px; background: #fff; border-radius: 18px; overflow: hidden; margin: 2px 0 12px; }
+.exanim img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; }
+.exanim img + img { animation: exAlt 1.8s steps(1, end) infinite; }
+@keyframes exAlt { 0% { opacity: 0; } 50% { opacity: 1; } }
+
 /* ===== v81 ===== */
 .grid2 > .f, .grid2 > label { min-width: 0; }
 .f input[type=date], input[type=date] { min-width: 0; width: 100%; max-width: 100%; display: block; -webkit-appearance: none; appearance: none; box-sizing: border-box; }
@@ -1429,5 +1435,7 @@ html { overflow-x: hidden; }
 <script src="js/seance.js"></script>
 <script src="js/build.js"></script>
 <script src="js/stamp.js"></script>
+<script src="js/fedb.js"></script>
+<script src="js/exanim.js"></script>
 </body>
 </html>
