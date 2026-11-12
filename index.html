@@ -1339,6 +1339,43 @@ body #view .card:active, .ltile:active, .lcard2:active, .lquick button:active, .
 /* notifications : l'ancienne s'efface */
 .toast.tout { animation: none !important; opacity: 0; transform: translate(-50%, 10px) scale(.97); transition: opacity .2s, transform .2s; }
 #wiz.noanim .wiz-body > * { animation: none !important; }
+/* ===== v85 : minuteur réductible, couronne, intensité ===== */
+html, body { overflow-x: hidden; overflow-x: clip; }
+#view { overflow-x: clip; }
+#restbar .rb-track { background: var(--accent); }
+#restbar .rb-track i { background: #3a3a3c; }
+#restbar .rb-min { position: absolute; top: 8px; right: 10px; width: 34px; height: 34px; border: 0; border-radius: 50%; background: #3a3a3c; color: #fff; display: grid; place-items: center; cursor: pointer; z-index: 1; }
+#restbar .rb-time { cursor: pointer; }
+#restbar { transition: left .25s, right .25s, padding .25s, border-radius .25s, bottom .25s; }
+#restbar.mini { left: auto; right: 12px; bottom: calc(92px + env(safe-area-inset-bottom)); display: flex; align-items: center; gap: 10px; padding: 8px 10px 8px 16px; border-radius: 22px; max-width: none; }
+body.has-livebar #restbar.mini { bottom: calc(152px + env(safe-area-inset-bottom)); }
+#restbar.mini .rb-btns { display: none; }
+#restbar.mini .rb-time { font-size: 22px; font-weight: 600; margin: 0; order: 1; }
+#restbar.mini .rb-track { width: 56px; order: 2; }
+#restbar.mini .rb-min { position: static; order: 3; width: 30px; height: 30px; transform: rotate(180deg); }
+.stype { position: relative; }
+.stype.prc::before { content: ''; position: absolute; top: -9px; left: 50%; width: 18px; height: 13px; transform: translateX(-50%) rotate(-8deg); background: no-repeat center/contain url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 18'%3E%3Cpath d='M2 5l5 4 5-8 5 8 5-4-2 12H4z' fill='%23ffd60a' stroke='%23b8860b' stroke-width='1.2' stroke-linejoin='round'/%3E%3C/svg%3E"); filter: drop-shadow(0 1px 2px rgba(0,0,0,.5)); animation: crownIn .4s cubic-bezier(.2,1.6,.4,1) both; }
+@keyframes crownIn { from { transform: translateX(-50%) scale(0) rotate(-30deg); } }
+.prdet { font-size: 13px; font-weight: 600; margin-top: 2px; }
+.intcard { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: 16px; background: var(--surface2); margin: 0 0 12px; }
+.intval { display: flex; align-items: baseline; gap: 2px; }
+.intval b { font-size: 30px; color: var(--c); font-variant-numeric: tabular-nums; }
+.intval span { color: var(--muted); font-size: 14px; }
+.intchart { display: flex; align-items: flex-end; gap: 5px; height: 90px; margin-top: 10px; padding-bottom: 18px; }
+.intchart > div { flex: 1; height: 100%; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; position: relative; }
+.intchart i { display: block; width: 100%; max-width: 22px; border-radius: 5px 5px 2px 2px; }
+.intchart span { position: absolute; bottom: -18px; font-size: 11px; color: var(--muted); }
+.exh { padding: 10px 0; border-bottom: 1px solid var(--line); }
+.exh:last-child { border-bottom: 0; }
+.exh-sets { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+.exh-sets span { background: var(--surface2); border-radius: 10px; padding: 4px 9px; font-size: 13px; font-variant-numeric: tabular-nums; }
+.exh-sets span.w { opacity: .6; }
+.exh-sets i { color: var(--muted); font-style: normal; }
+.exren { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+section.card.exo.dropped { animation: dropIn .45s ease-out; }
+@keyframes dropIn { from { box-shadow: 0 0 0 2px var(--accent); } }
+section.card.exo.dragging, .rtex2.dragging { will-change: transform; }
+
 /* animation photo du mouvement (deux images qui alternent) */
 .exanim { position: relative; width: 100%; aspect-ratio: 4 / 3; max-height: 300px; background: #fff; border-radius: 18px; overflow: hidden; margin: 2px 0 12px; }
 .exanim img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; }
@@ -1439,5 +1476,6 @@ html { overflow-x: hidden; }
 <script src="js/stamp.js"></script>
 <script src="js/fedb.js"></script>
 <script src="js/exanim.js"></script>
+<script src="js/live.js"></script>
 </body>
 </html>

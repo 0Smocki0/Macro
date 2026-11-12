@@ -14,7 +14,7 @@ function importTrain(d) { TS = deepMerge(structuredClone(TDEF), d); tsave(); }
 
 // ---------- Bibliothèque d’exercices ----------
 // kind : wr = charge × reps · bw = poids du corps (+ lest facultatif) · time = durée · cardio = distance + durée
-const MUSCLES = ['Pectoraux', 'Dos', 'Épaules', 'Biceps', 'Triceps', 'Quadriceps', 'Ischios', 'Fessiers', 'Mollets', 'Abdos', 'Avant-bras', 'Corps entier', 'Cardio', 'Autre'];
+const MUSCLES = ['Pectoraux', 'Dos', 'Épaules', 'Biceps', 'Triceps', 'Quadriceps', 'Ischios', 'Fessiers', 'Mollets', 'Abdos', 'Avant-bras', 'Corps entier', 'Cardio', 'Autre', 'Adducteurs'];
 const EQUIP = ['Barre', 'Haltères', 'Machine', 'Poulie', 'Poids du corps', 'Kettlebell', 'Élastique', 'Autre'];
 const KINDS = { wr: 'Charge × répétitions', bw: 'Poids du corps (+ lest)', time: 'Durée', cardio: 'Distance + durée' };
 const RAW_EX = [
@@ -37,7 +37,7 @@ const RAW_EX = [
   ['hack', 'Hack squat', 5, 2, 'wr'], ['legext', 'Leg extension', 5, 2, 'wr'], ['fentes', 'Fentes (haltères)', 5, 1, 'wr'],
   ['bulgare', 'Squat bulgare', 5, 1, 'wr'], ['gobelet', 'Goblet squat', 5, 5, 'wr'],
   ['sdtjt', 'Soulevé de terre roumain', 6, 0, 'wr'], ['legcurl', 'Leg curl allongé', 6, 2, 'wr'], ['legcurla', 'Leg curl assis', 6, 2, 'wr'], ['goodmorning', 'Good morning', 6, 0, 'wr'],
-  ['hipthrust', 'Hip thrust (barre)', 7, 0, 'wr'], ['abduc', 'Abduction (machine)', 7, 2, 'wr'], ['glutekb', 'Kickback fessier (poulie)', 7, 3, 'wr'],
+  ['hipthrust', 'Hip thrust (barre)', 7, 0, 'wr'], ['abduc', 'Abduction (machine)', 7, 2, 'wr'], ['adduc', 'Adduction (machine)', 14, 2, 'wr'], ['glutekb', 'Kickback fessier (poulie)', 7, 3, 'wr'],
   ['mollets', 'Mollets debout', 8, 2, 'wr'], ['molletsa', 'Mollets assis', 8, 2, 'wr'],
   ['crunch', 'Crunch', 9, 4, 'bw'], ['crunchp', 'Crunch à la poulie', 9, 3, 'wr'], ['releve', 'Relevé de jambes', 9, 4, 'bw'],
   ['abwheel', 'Roue abdominale', 9, 4, 'bw'], ['russian', 'Russian twist', 9, 4, 'bw'], ['gainage', 'Gainage', 9, 4, 'time'],
@@ -47,6 +47,7 @@ const RAW_EX = [
   ['elliptique', 'Vélo elliptique', 12, 2, 'cardio'], ['marche', 'Marche', 12, 7, 'cardio'], ['corde', 'Corde à sauter', 12, 7, 'time']
 ];
 const EXLIB = Object.fromEntries(RAW_EX.map(r => [r[0], { id: r[0], name: r[1], muscle: MUSCLES[r[2]], equip: EQUIP[r[3]], kind: r[4] }]));
+MUSCLES.splice(MUSCLES.indexOf('Fessiers') + 1, 0, MUSCLES.pop()); // « Adducteurs » rangé après les fessiers
 const exById = id => EXLIB[id] || TS.exercises[id] || { id, name: 'Exercice supprimé', muscle: 'Autre', equip: 'Autre', kind: 'wr' };
 const allEx = () => [...Object.values(EXLIB), ...Object.values(TS.exercises)].sort((a, b) => a.name.localeCompare(b.name, 'fr'));
 
@@ -506,7 +507,7 @@ const HEVY_ALIAS = {
   'triceps pushdown': 'pushdown', 'triceps rope pushdown': 'pushdown', 'skullcrusher (barbell)': 'barfront', 'overhead triceps extension (dumbbell)': 'extoh', 'triceps extension (dumbbell)': 'extoh', 'bench press - close grip (barbell)': 'dcs', 'triceps kickback (dumbbell)': 'kickback',
   'squat (barbell)': 'squat', 'front squat': 'frontsq', 'leg press (machine)': 'presse', 'leg press': 'presse', 'hack squat (machine)': 'hack', 'leg extension (machine)': 'legext',
   'lunge (dumbbell)': 'fentes', 'bulgarian split squat': 'bulgare', 'goblet squat': 'gobelet', 'romanian deadlift (barbell)': 'sdtjt', 'romanian deadlift (dumbbell)': 'sdtjt',
-  'lying leg curl (machine)': 'legcurl', 'seated leg curl (machine)': 'legcurla', 'good morning (barbell)': 'goodmorning', 'hip thrust (barbell)': 'hipthrust', 'hip abduction (machine)': 'abduc',
+  'lying leg curl (machine)': 'legcurl', 'seated leg curl (machine)': 'legcurla', 'good morning (barbell)': 'goodmorning', 'hip thrust (barbell)': 'hipthrust', 'hip abduction (machine)': 'abduc', 'hip adduction (machine)': 'adduc',
   'standing calf raise (machine)': 'mollets', 'standing calf raise': 'mollets', 'seated calf raise': 'molletsa', 'crunch': 'crunch', 'cable crunch': 'crunchp', 'hanging leg raise': 'releve', 'ab wheel': 'abwheel', 'russian twist (weighted)': 'russian', 'plank': 'gainage',
   'kettlebell swing': 'kbswing', 'burpee': 'burpees', 'farmers walk': 'farmer', 'running': 'course', 'treadmill': 'course', 'cycling': 'velo', 'rowing machine': 'rameur', 'elliptical trainer': 'elliptique', 'walking': 'marche', 'jump rope': 'corde'
 };

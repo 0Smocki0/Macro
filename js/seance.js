@@ -87,20 +87,40 @@ if (typeof renderWiz === 'function') renderWiz = (orig => function () {
       st.gap = st.cards.length > 1 ? st.rects[1].top - st.rects[0].top - st.rects[0].h : 10;
       st.cards.forEach(c => { c.style.transition = c === st.card ? 'none' : 'transform .2s cubic-bezier(.2,.9,.3,1)'; });
     }
+    st.ty = t.clientY; if (!st.raf) { const loop = () => { if (!st || !st.drag) return; move(); st.raf = requestAnimationFrame(loop); }; st.raf = requestAnimationFrame(loop); }
+    move();
+  }, { capture: true, passive: false });
+  // position du doigt → bande déplacée + voisines décalées ; défilement continu près des bords (vitesse selon la proximité)
+  function move() {
+    const K = st.K, sc = K.scroller(), y = st.ty;
     const box = sc ? sc.getBoundingClientRect() : { top: 0, bottom: innerHeight };
-    if (t.clientY < box.top + 70) { if (sc) sc.scrollTop -= 9; else scrollBy(0, -9); } else if (t.clientY > box.bottom - 110) { if (sc) sc.scrollTop += 9; else scrollBy(0, 9); }
-    const dy = t.clientY + sTop(sc) - st.y0; st.card.style.transform = `translate3d(0,${dy}px,0) scale(1.03)`;
+    const up = box.top + 80 - y, dn = y - (box.bottom - 120);
+    if (up > 0) { const v = Math.min(14, up / 6); if (sc) sc.scrollTop -= v; else scrollBy(0, -v); } else if (dn > 0) { const v = Math.min(14, dn / 6); if (sc) sc.scrollTop += v; else scrollBy(0, v); }
+    const dy = y + sTop(sc) - st.y0; st.dy = dy; st.card.style.transform = `translate3d(0,${dy}px,0) scale(1.03)`;
     const R = st.rects, me = R[st.from]; const mid = me.top + dy + me.h / 2; let to = st.from;
     for (let j = 0; j < R.length; j++) { if (j === st.from) continue; const m = R[j].top + R[j].h / 2; if (j > st.from && mid > m) to = Math.max(to, j); if (j < st.from && mid < m) to = Math.min(to, j); }
     if (to !== st.to) { st.to = to; haptic([6]); }
     const sh = me.h + st.gap;
-    st.cards.forEach((c, j) => { if (j === st.from) return; let y = 0; if (j > st.from && j <= to) y = -sh; if (j < st.from && j >= to) y = sh; c.style.transform = y ? `translate3d(0,${y}px,0)` : ''; });
-  }, { capture: true, passive: false });
+    st.cards.forEach((c, j) => { if (j === st.from) return; let v = 0; if (j > st.from && j <= to) v = -sh; if (j < st.from && j >= to) v = sh; const tr = v ? `translate3d(0,${v}px,0)` : ''; if (c.style.transform !== tr) c.style.transform = tr; });
+  }
   const end = () => {
-    if (!st) return; const s = st; clearTimeout(s.timer); if (!s.armed) { st = null; return; }
-    SE_SUPPRESS = Date.now(); clear(); st = null;
-    if (!s.drag) { const b = s.card.querySelector(s.K.menu); if (b) { SE_SUPPRESS = 0; b.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true })); b.click(); SE_SUPPRESS = Date.now(); } return; }
-    if (s.to !== s.from) s.K.drop(s.from, s.to);
+    if (!st) return; const s = st; clearTimeout(s.timer); cancelAnimationFrame(s.raf); if (!s.armed) { st = null; return; }
+    SE_SUPPRESS = Date.now();
+    if (!s.drag) { clear(); st = null; const b = s.card.querySelector(s.K.menu); if (b) { SE_SUPPRESS = 0; b.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true })); b.click(); SE_SUPPRESS = Date.now(); } return; }
+    st = null;
+    // la bande se pose en douceur dans sa nouvelle place, puis on reconstruit en gardant l’exercice sous les yeux
+    const R = s.rects; let ty = 0;
+    if (s.to > s.from) for (let j = s.from + 1; j <= s.to; j++) ty += R[j].h + s.gap; else for (let j = s.to; j < s.from; j++) ty -= R[j].h + s.gap;
+    s.card.style.transition = 'transform .2s cubic-bezier(.2,.9,.3,1)'; s.card.style.transform = `translate3d(0,${ty}px,0)`;
+    setTimeout(() => {
+      const sc = s.K.scroller(); const anchor = s.card.getBoundingClientRect().top;
+      const b = s.K.box(); if (b) b.classList.remove('dragmode'); qa(s.K.item).forEach(c => { c.style.transition = 'none'; c.style.transform = ''; c.classList.remove('exlift', 'dragging'); });
+      if (s.to !== s.from) s.K.drop(s.from, s.to);
+      const c = qa(s.K.item)[s.to]; if (!c) return;
+      const d = c.getBoundingClientRect().top - anchor; if (sc) sc.scrollTop += d; else scrollTo(0, scrollY + d);
+      c.classList.add('dropped'); setTimeout(() => c.classList.remove('dropped'), 500);
+      requestAnimationFrame(() => qa(s.K.item).forEach(x => { x.style.transition = ''; }));
+    }, 210);
   };
   addEventListener('touchend', end, { capture: true, passive: true }); addEventListener('touchcancel', end, { capture: true, passive: true });
 })();

@@ -17,6 +17,7 @@ const MUSCLE_RULES = [
   ['Épaules', /shoulder|overhead press|military|militaire|\blaterale?s?\b|front raise|elevation|rear delt|visage|arriere d.epaule|reverse fly|reverse pec|oiseau|face pull|arnold|upright row|rowing menton|epaule|delt|\by raise|landmine press|push press/],
   ['Pectoraux', /bench|chest|\bpec|\bfly|flye|ecarte|push ?up|pompe|\bdips?\b|developpe couche|developpe incline|developpe decline|crossover|butterfly|svend/],
   ['Dos', /\brow|pull|\blat\b|\blats\b|\bchin|traction|muscle up|tirage|deadlift|souleve|shrug|back extension|hyperext|lombaire|pullover|superman|\bdos\b|rack pull|rowing/],
+  ['Adducteurs', /adduct/],
   ['Quadriceps', /squat|leg press|presse|leg extension|extension (des )?jambes|cuisse|lunge|fente|step ?up|hack|sissy|adduct|wall sit|chaise|pistol/],
   ['Abdos', /crunch|\babs?\b|abdo|plank|gainage|sit ?up|leg raise|releve|twist|oblique|wood ?chop|hollow|dead bug|mountain|v-?up|toes to bar|ab wheel|roue|pallof|l-sit/]
 ];
@@ -34,7 +35,7 @@ const LIKE_RULES = [
   [/curl.*(avant.?bras|poignet)|wrist|forearm/, 'wristcurl'],
   [/leg curl.*(assis|seated)|seated leg curl/, 'legcurla'], [/leg curl|hamstring curl/, 'legcurl'],
   [/roumain|romanian|\brdl\b|jambes tendues|stiff/, 'sdtjt'], [/good ?morning/, 'goodmorning'],
-  [/hip thrust|glute bridge|pont fessier/, 'hipthrust'], [/abduct/, 'abduc'], [/kickback.*(fessier|glute)|glute kickback/, 'glutekb'],
+  [/hip thrust|glute bridge|pont fessier/, 'hipthrust'], [/abduct/, 'abduc'], [/adduct/, 'adduc'], [/kickback.*(fessier|glute)|glute kickback/, 'glutekb'],
   [/pull-?over|bras tendus|straight arm/, 'pullover'],
   [/tirage.*visage|face pull/, 'facepull'], [/oiseau|arriere d.epaule|rear delt|reverse fly|reverse pec/, 'oiseau'],
   [/elevation.*(frontale|avant)|front raise/, 'front'], [/(elevation|lateral).*(poulie|cable)|cable lateral/, 'elevp'], [/elevation|lateral raise|\blaterale?s?\b raise/, 'elev'],
@@ -68,7 +69,7 @@ function kindFromData(id) {
   if (km) return 'cardio'; if (reps) return kg ? 'wr' : 'bw'; if (t) return 'time'; return null;
 }
 // classe les exercices importés (on ne touche pas aux choix faits à la main)
-const CLASSIFY_V = 4;
+const CLASSIFY_V = 5;
 function autoClassify(force) {
   let n = 0;
   for (const x of Object.values(TS.exercises)) {

@@ -79,7 +79,7 @@ function prDetails(w) {
     if (!exHistory(e.exId, w.start).length) return; // première fois : pas de record à comparer
     const work = e.sets.map((s, si) => ({ s, si })).filter(x => x.s.type !== 'w');
     const best = f => work.reduce((b, x) => (f(x.s) > (b ? f(b.s) : -1) ? x : b), null);
-    const push = (type, old, nw, x, fmt) => { out.push({ ex: X.name, type, old: fmt(old), nw: fmt(nw), up: fmt(nw - old) }); w.prSets.push(ei + '-' + x.si); };
+    const push = (type, old, nw, x, fmt) => { const s = x.s; const det = X.kind === 'wr' || X.kind === 'bw' ? `${num(s.w) ? fr(num(s.w)) + ' kg' : 'Poids du corps'} × ${r0(num(s.r))} réps` : ''; out.push({ ex: X.name, type, old: fmt(old), nw: fmt(nw), up: fmt(nw - old), det }); w.prSets.push(ei + '-' + x.si); };
     if (X.kind === 'wr' || X.kind === 'bw') {
       const bw = best(s => num(s.w)), be = best(s => e1rm(num(s.w), num(s.r))), br = best(s => num(s.r));
       if (bw && num(bw.s.w) > before.w && num(bw.s.w) > 0) push('Charge max', before.w, num(bw.s.w), bw, kg);
@@ -99,7 +99,7 @@ function summaryHTML(w, det) {
       <div class="stat"><div class="v">${dur(w.end - w.start)}</div><div class="l">durée</div></div>
       <div class="stat"><div class="v">${wSets(w)}</div><div class="l">séries</div></div>
       <div class="stat"><div class="v">${bigKg(wVolume(w))}</div><div class="l">volume</div></div></div>
-    ${det.map((p, i) => `<div class="prcard" style="animation-delay:${0.25 + i * 0.12}s"><div class="prmed">🏅</div><div class="grow"><div class="prex">${esc(p.ex)}</div><div class="small muted">${esc(p.type)}</div></div>
+    ${det.map((p, i) => `<div class="prcard" style="animation-delay:${0.25 + i * 0.12}s"><div class="prmed">🏅</div><div class="grow"><div class="prex">${esc(p.ex)}</div><div class="small muted">${esc(p.type)}</div>${p.det ? `<div class="prdet">${esc(p.det)}</div>` : ''}</div>
       <div class="prval"><b>${esc(p.nw)}</b><span>avant : ${esc(p.old)}</span></div></div>`).join('')}
     ${det.length ? '' : '<p class="muted" style="text-align:center">Pas de record aujourd’hui, mais la régularité, c’est ce qui fait progresser.</p>'}
     <button class="btn primary block" style="margin-top:12px" data-act="closeSheet">Super</button>`;

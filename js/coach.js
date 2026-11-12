@@ -23,7 +23,7 @@ const isCompound = X => COMPOUND.has(X.id) || (X.like && COMPOUND.has(X.like));
 // et lombaires ; l’épaule en deltoïde antérieur (développés), latéral (élévations) et postérieur (oiseau, face pull).
 const ANA_NAME = { pecs: 'Pectoraux', lats: 'Grand dorsal', traps: 'Haut du dos', lowback: 'Lombaires', delts: 'Deltoïde antérieur', latdelts: 'Deltoïde latéral', reardelts: 'Deltoïde postérieur',
   biceps: 'Biceps', triceps: 'Triceps', forearms: 'Avant-bras', quads: 'Quadriceps', adductors: 'Adducteurs', hams: 'Ischios', glutes: 'Fessiers', calves: 'Mollets', abs: 'Abdos', obliques: 'Obliques', tibialis: 'Tibias' };
-const GROUP_ANA = { Pectoraux: ['pecs'], Dos: ['lats'], Épaules: ['latdelts'], Biceps: ['biceps'], Triceps: ['triceps'], Quadriceps: ['quads'], Ischios: ['hams'], Fessiers: ['glutes'], Mollets: ['calves'], Abdos: ['abs'], 'Avant-bras': ['forearms'] };
+const GROUP_ANA = { Pectoraux: ['pecs'], Dos: ['lats'], Épaules: ['latdelts'], Biceps: ['biceps'], Triceps: ['triceps'], Quadriceps: ['quads'], Ischios: ['hams'], Fessiers: ['glutes'], Adducteurs: ['adductors'], Mollets: ['calves'], Abdos: ['abs'], 'Avant-bras': ['forearms'] };
 const ROW_IDS = new Set(['rowing', 'rowh', 'rowpoulie', 'tbar']);
 function anaRegions(X) {
   if (X.kind === 'cardio' || X.muscle === 'Cardio') return { p: [], s: [] };

@@ -29,7 +29,12 @@ const EQ_OF = { dumbbell: 'd', barbell: 'b', cable: 'c', machine: 'm', 'smith ma
 const ewords = s => norm(s).replace(/[^a-z0-9]+/g, ' ').trim().split(' ').filter(w => w.length > 1).map(w => w.replace(/s$/, ''));
 // correspondances vérifiées à la main (mots du nom français → fiche) ; testées dans l’ordre, la plus précise d’abord
 const FEDB_FIX = [
-  ['squat a la ceinture', null], ['abdominaux talons', 'Alternate_Heel_Touchers'],
+  ['squat a la ceinture', null], ['burpee', null], ['thruster', null],
+  ['leg curl assis', 'Seated_Leg_Curl'], ['leg curl seated', 'Seated_Leg_Curl'], ['leg curl debout', 'Standing_Leg_Curl'], ['leg curl standing', 'Standing_Leg_Curl'], ['leg curl', 'Lying_Leg_Curls'],
+  ['leg extension', 'Leg_Extensions'], ['extension jambes', 'Leg_Extensions'], ['extension des jambes', 'Leg_Extensions'],
+  ['adduction', 'Thigh_Adductor'], ['adducteurs', 'Thigh_Adductor'], ['adducteur', 'Thigh_Adductor'], ['adductor', 'Thigh_Adductor'], ['abduction', 'Thigh_Abductor'], ['abductor', 'Thigh_Abductor'],
+  ['pec deck', 'Butterfly'], ['barre au front', 'EZ-Bar_Skullcrusher'], ['souleve de terre roumain', 'Romanian_Deadlift'], ['curl poignets', 'Palms-Up_Dumbbell_Wrist_Curl_Over_A_Bench'], ['curl poignet', 'Palms-Up_Dumbbell_Wrist_Curl_Over_A_Bench'],
+  ['marche du fermier', 'Farmers_Walk'], ['presse a cuisse', 'Leg_Press'], ['elliptique', 'Elliptical_Trainer'], ['course a pied', 'Running_Treadmill'], ['marche', 'Walking_Treadmill'], ['abdominaux talons', 'Alternate_Heel_Touchers'],
   ['developpe couche incline halter', 'Incline_Dumbbell_Press'], ['developpe incline halter', 'Incline_Dumbbell_Press'], ['developpe couche prise serree', 'Close-Grip_Barbell_Bench_Press'],
   ['developpe couche halter', 'Dumbbell_Bench_Press'], ['developpe couche machine', 'Machine_Bench_Press'], ['developpe couche', 'Barbell_Bench_Press_-_Medium_Grip'],
   ['developpe militaire halter', 'Dumbbell_Shoulder_Press'], ['developpe epaules halter', 'Dumbbell_Shoulder_Press'],
@@ -41,18 +46,19 @@ const FEDB_FIX = [
   ['elevations laterales', 'Side_Lateral_Raise'], ['elevation laterale', 'Side_Lateral_Raise'], ['elevations frontales', 'Front_Dumbbell_Raise'], ['elevation frontale', 'Front_Dumbbell_Raise'],
   ['oiseau', 'Bent_Over_Dumbbell_Rear_Delt_Raise_With_Head_On_Bench'], ['curl marteau', 'Hammer_Curls'], ['curl derriere le dos', 'Standing_Biceps_Cable_Curl'], ['curl a la poulie', 'Standing_Biceps_Cable_Curl'],
   ['extension triceps poulie', 'Triceps_Pushdown'], ['extension nuque', 'Standing_Dumbbell_Triceps_Extension'], ['squat bulgare', 'Split_Squat_with_Dumbbells'],
-  ['crunch a la poulie', 'Cable_Crunch'], ['crunch', 'Crunches']
+  ['crunch a la poulie', 'Cable_Crunch'], ['crunch', 'Crunches'], ['curl incline', 'Incline_Dumbbell_Curl'], ['curl pupitre', 'Machine_Preacher_Curls'], ['curl halter', 'Dumbbell_Bicep_Curl'], ['kickback fessier', 'One-Legged_Cable_Kickback']
 ];
 let FEDB_IDX = null;
 function fedbMatch(X) {
   if (typeof FEDB === 'undefined' || !X) return null;
-  const nn = (' ' + norm(X.name).replace(/[^a-z0-9]+/g, ' ') + ' ').replace(/ halteres? /g, ' halter ');
+  const nn = (' ' + norm(X.origName || (typeof EX_ORIG !== 'undefined' && EX_ORIG[X.id]) || X.name).replace(/[^a-z0-9]+/g, ' ') + ' ').replace(/ halteres? /g, ' halter ');
   for (const [k, id] of FEDB_FIX) if (k.split(' ').every(w => nn.includes(' ' + w + ' ') || (w === 'halter' && / halter /.test(nn)))) return id;
   if (!FEDB_IDX) FEDB_IDX = FEDB.map(([id, name, eq]) => ({ id, eq, w: new Set(ewords(name)), n: ewords(name).length }));
-  const src = ' ' + norm(X.name + ' ' + (X.equip || '')).replace(/[^a-z0-9]+/g, ' ') + ' ';
+  const src = ' ' + norm((X.origName || (typeof EX_ORIG !== 'undefined' && EX_ORIG[X.id]) || X.name) + ' ' + (X.equip || '')).replace(/[^a-z0-9]+/g, ' ') + ' ';
   let q = src; let eq = null;
   for (const [fr_, en] of FR_EN) { const k = ' ' + fr_ + ' '; if (q.includes(k)) { q = q.replace(k, ' ' + en + ' '); if (EQ_OF[en] && !eq) eq = EQ_OF[en]; } }
-  const qw = ewords(q).filter(w => !['de', 'la', 'le', 'du', 'des', 'en', 'au', 'et', 'avec', 'the', 'prise', 'version'].includes(w));
+  let qw = ewords(q).filter(w => !['de', 'la', 'le', 'du', 'des', 'en', 'au', 'et', 'avec', 'the', 'prise', 'version'].includes(w));
+  const core = qw.filter(w => !['machine', 'barbell', 'dumbbell', 'cable', 'band', 'smith', 'ez-bar', 'ez', 'bar'].includes(w)); if (core.length) qw = core; // le matériel départage, il ne fait pas le choix
   if (!qw.length) return null;
   let best = null, bs = 0;
   for (const e of FEDB_IDX) {

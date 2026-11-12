@@ -107,13 +107,13 @@ const EX_MOVE = {
   curlb: 'curl', curlh: 'curldb', marteau: 'curldb', curlp: 'curlc', pupitre: 'preacher', curlinc: 'curlinc',
   pushdown: 'pushdown', barfront: 'skull', extoh: 'ohext', dcs: 'bench', kickback: 'kickback',
   squat: 'squat', frontsq: 'frontsq', presse: 'press', hack: 'hack', legext: 'legext', fentes: 'lunge', bulgare: 'split', gobelet: 'goblet',
-  sdtjt: 'rdl', legcurl: 'legcurl', legcurla: 'legcurla', goodmorning: 'goodmorn', hipthrust: 'hipthrust', abduc: 'abduc', glutekb: 'glutekb',
+  sdtjt: 'rdl', legcurl: 'legcurl', legcurla: 'legcurla', goodmorning: 'goodmorn', hipthrust: 'hipthrust', abduc: 'abduc', adduc: 'abduc', glutekb: 'glutekb',
   mollets: 'calf', molletsa: 'calf', crunch: 'crunch', crunchp: 'cablecr', releve: 'legraise', abwheel: 'abwheel', russian: 'russian', gainage: 'plank',
   wristcurl: 'wrist', kbswing: 'swing', thruster: 'thruster', burpees: 'burpee', farmer: 'farmer',
   course: 'run', velo: 'bike', rameur: 'rower', elliptique: 'walk', marche: 'walk', corde: 'rope'
 };
 const EQ_OVERRIDE = { dch: 'dumbbell', dcm: 'handle', dih: 'dumbbell', tbar: 'barbell', dcs: 'barbell', arnold: 'dumbbell', marteau: 'dumbbell', front: 'dumbbell', molletsa: 'dumbbell' };
-const MOVE_BY_MUSCLE = { 'Pectoraux': 'bench', 'Dos': 'row', 'Épaules': 'ohpdb', 'Biceps': 'curldb', 'Triceps': 'pushdown', 'Quadriceps': 'squat', 'Ischios': 'rdl', 'Fessiers': 'hipthrust', 'Mollets': 'calf', 'Abdos': 'crunch', 'Avant-bras': 'wrist', 'Corps entier': 'thruster', 'Cardio': 'run' };
+const MOVE_BY_MUSCLE = { 'Pectoraux': 'bench', 'Dos': 'row', 'Épaules': 'ohpdb', 'Biceps': 'curldb', 'Triceps': 'pushdown', 'Quadriceps': 'squat', 'Ischios': 'rdl', 'Fessiers': 'hipthrust', 'Adducteurs': 'abduc', 'Mollets': 'calf', 'Abdos': 'crunch', 'Avant-bras': 'wrist', 'Corps entier': 'thruster', 'Cardio': 'run' };
 
 // ---------- Muscles sollicités ----------
 // régions de la carte : pecs delts biceps forearms abs obliques quads adductors tibialis | traps reardelts lats triceps lowback glutes hams calves
@@ -129,12 +129,12 @@ const MUS = {
   pushdown: ['triceps', ''], barfront: ['triceps', ''], extoh: ['triceps', ''], dcs: ['triceps pecs', 'delts'], kickback: ['triceps', ''],
   squat: ['quads glutes', 'hams lowback adductors'], frontsq: ['quads', 'glutes abs'], presse: ['quads glutes', 'hams adductors'], hack: ['quads', 'glutes'], legext: ['quads', ''],
   fentes: ['quads glutes', 'hams adductors'], bulgare: ['quads glutes', 'hams'], gobelet: ['quads glutes', 'abs adductors'],
-  sdtjt: ['hams glutes', 'lowback'], legcurl: ['hams', 'calves'], legcurla: ['hams', 'calves'], goodmorning: ['hams lowback', 'glutes'], hipthrust: ['glutes', 'hams'], abduc: ['glutes', ''], glutekb: ['glutes', 'hams'],
+  sdtjt: ['hams glutes', 'lowback'], legcurl: ['hams', 'calves'], legcurla: ['hams', 'calves'], goodmorning: ['hams lowback', 'glutes'], hipthrust: ['glutes', 'hams'], abduc: ['glutes', ''], adduc: ['adductors', ''], glutekb: ['glutes', 'hams'],
   mollets: ['calves', ''], molletsa: ['calves', ''], crunch: ['abs', 'obliques'], crunchp: ['abs', 'obliques'], releve: ['abs', 'obliques'], abwheel: ['abs', 'lats obliques'], russian: ['obliques', 'abs'], gainage: ['abs', 'obliques delts'],
   wristcurl: ['forearms', ''], kbswing: ['glutes hams', 'lowback delts'], thruster: ['quads delts', 'glutes triceps'], burpees: ['quads pecs', 'delts abs glutes'], farmer: ['forearms', 'traps abs'],
   course: ['quads calves', 'hams glutes'], velo: ['quads', 'calves hams glutes'], rameur: ['lats quads', 'hams biceps'], elliptique: ['quads glutes', 'calves'], marche: ['calves quads', 'glutes'], corde: ['calves', 'quads delts']
 };
-const MUS_BY_GROUP = { 'Pectoraux': 'pecs', 'Dos': 'lats traps', 'Épaules': 'delts', 'Biceps': 'biceps', 'Triceps': 'triceps', 'Quadriceps': 'quads', 'Ischios': 'hams', 'Fessiers': 'glutes', 'Mollets': 'calves', 'Abdos': 'abs', 'Avant-bras': 'forearms', 'Corps entier': 'quads glutes delts', 'Cardio': 'quads calves' };
+const MUS_BY_GROUP = { 'Pectoraux': 'pecs', 'Dos': 'lats traps', 'Épaules': 'delts', 'Biceps': 'biceps', 'Triceps': 'triceps', 'Quadriceps': 'quads', 'Ischios': 'hams', 'Fessiers': 'glutes', 'Adducteurs': 'adductors', 'Mollets': 'calves', 'Abdos': 'abs', 'Avant-bras': 'forearms', 'Corps entier': 'quads glutes delts', 'Cardio': 'quads calves' };
 const MUS_NAME = { pecs: 'Pectoraux', delts: 'Épaules', biceps: 'Biceps', forearms: 'Avant-bras', abs: 'Abdominaux', obliques: 'Obliques', quads: 'Quadriceps', adductors: 'Adducteurs', tibialis: 'Tibias', traps: 'Trapèzes', reardelts: 'Arrière d’épaule', lats: 'Grand dorsal', triceps: 'Triceps', lowback: 'Lombaires', glutes: 'Fessiers', hams: 'Ischio-jambiers', calves: 'Mollets' };
 function musclesOf(X) {
   const m = MUS[X.id]; if (m) return { p: m[0].split(' ').filter(Boolean), s: (m[1] || '').split(' ').filter(Boolean) };
