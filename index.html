@@ -1382,6 +1382,9 @@ body.in-live, body.in-live #view { touch-action: pan-y; overscroll-behavior-x: n
 .dragmode section.card.exo, .dragmode .rtex2 { will-change: transform; }
 .dragmode .rtex2.dragging, .dragmode section.card.exo.dragging { box-shadow: 0 12px 30px rgba(0,0,0,.45); }
 #sheetBody.dragmode { overscroll-behavior: contain; }
+.ntsteps { margin: 0 0 14px; padding-left: 20px; line-height: 1.5; }
+.nttopic { display: flex; gap: 8px; align-items: center; background: var(--surface2); border-radius: 12px; padding: 8px 8px 8px 12px; margin-bottom: 8px; }
+.nttopic code { flex: 1; font-size: 15px; user-select: all; -webkit-user-select: all; word-break: break-all; }
 .sheet:has(#sheetBody.dragmode) { -webkit-backdrop-filter: none !important; backdrop-filter: none !important; }
 .dragmode .rtex2:not(.dragging) { box-shadow: none !important; }
 

@@ -50,6 +50,7 @@ function raPlay(silence) {
 }
 // à appeler après chaque geste : la piste suit le minuteur (démarrage, ±15 s, passer…)
 function raSync() {
+  try { ntSync(); } catch (e) { }
   if (TS.rest && TS.settings.restSound !== false) {
     if (TS.rest.end !== RA.end) { const left = (TS.rest.end - Date.now()) / 1000; if (left > 0.4) { RA.end = TS.rest.end; raPlay(left); } }
   } else if (RA.end && !RA.rang && Date.now() < RA.end - 400) { RA.end = 0; RA.bellAt = 0; if (RA.el) RA.el.pause(); }
@@ -124,9 +125,18 @@ function crowns() {
 }
 
 // ---------- 4. Vibration en validant une série ----------
+let REST_SRC = null; // série qui a lancé le repos en cours
 ACTIONS.tSetDone = (orig => function (el) {
-  try { const ex = curEx(el); const s = ex && ex.sets[+el.dataset.si]; if (s && !s.done) haptic([20]); } catch (e) { }
-  return orig.apply(this, arguments);
+  const key = el.dataset.ei + '-' + el.dataset.si; let was = false;
+  try { const ex = curEx(el); const s = ex && ex.sets[+el.dataset.si]; was = !!(s && s.done); if (s && !s.done) haptic([20]); } catch (e) { }
+  const r = orig.apply(this, arguments);
+  try {
+    const s = curEx(el).sets[+el.dataset.si];
+    if (!was && s.done && TS.rest) REST_SRC = key;
+    // série dé-validée : le minuteur qu’elle avait lancé disparaît
+    else if (was && !s.done && TS.rest && (REST_SRC === key || REST_SRC === null)) { TS.rest = null; REST_SRC = null; tsave(); tick(); }
+  } catch (e) { }
+  return r;
 })(ACTIONS.tSetDone);
 
 // ---------- 5. Filtre par muscle : la barre reste où elle est ----------
@@ -241,3 +251,44 @@ openSheet = (orig => function (t, b) {
   return orig.call(this, t, b);
 })(openSheet);
 document.addEventListener('change', e => { if (e.target && e.target.id === 't_mix') { TS.settings.bellLoud = e.target.checked; tsave(); raSession(); } });
+
+// ---------- 11. Alerte partout (silencieux, écran éteint, hors de l’appli) : notification ntfy ----------
+// L’appli programme une notification sur ntfy.sh au début du repos (remplacée à chaque changement, annulée si on passe).
+// L’appli ntfy (App Store, gratuite) la reçoit comme une notification normale : vibre en silencieux, ne coupe pas la musique.
+const NT = { end: 0 };
+const ntCfg = () => TS.settings.ntfy || (TS.settings.ntfy = { on: false, topic: 'macro-' + Array.from(crypto.getRandomValues(new Uint8Array(9)), b => 'abcdefghijkmnpqrstuvwxyz23456789'[b % 32]).join('') });
+const ntURL = () => 'https://ntfy.sh/' + encodeURIComponent(ntCfg().topic);
+function ntSend(end, seq = 'r' + end) {
+  return fetch(ntURL() + '/' + seq, { method: 'POST', body: 'Série suivante !', headers: { Title: 'Repos terminé', Priority: '5', Tags: 'bell', At: String(Math.round(end / 1000)) } }).catch(() => { });
+}
+// ntfy.sh enregistre les messages par lots : une annulation trop rapide peut être ratée, on la répète
+function ntCancel(seq) { const go = () => fetch(ntURL() + '/' + seq, { method: 'DELETE' }).catch(() => { }); go(); setTimeout(go, 3000); setTimeout(go, 8000); }
+function ntSync() {
+  const c = TS.settings.ntfy; if (!c || !c.on) return;
+  // une notification par repos ; si le temps change ou si on passe, l’ancienne est annulée
+  if (TS.rest) { if (TS.rest.end !== NT.end) { if (NT.end && Date.now() < NT.end - 1500) ntCancel('r' + NT.end); NT.end = TS.rest.end; if (NT.end - Date.now() > 11000) ntSend(NT.end); } }
+  else if (NT.end) { if (Date.now() < NT.end - 1500) ntCancel('r' + NT.end); NT.end = 0; }
+}
+setInterval(() => { try { ntSync(); } catch (e) { } }, 1000);
+function ntSheet() {
+  const c = ntCfg(); tsave();
+  openSheet('Alerte écran verrouillé', `<p class="muted" style="margin:0 0 12px">Pour être prévenu à la fin du repos même en silencieux, écran éteint ou hors de l’appli, sans couper la musique.</p>
+    <ol class="ntsteps"><li>Installe l’appli gratuite <b>ntfy</b> depuis l’App Store.</li><li>Dans ntfy : <b>＋</b> → nom du sujet ci-dessous → <b>Subscribe</b>, puis autorise les notifications.</li><li>Active l’alerte ici et touche « Tester ».</li></ol>
+    <div class="nttopic"><code id="ntTopic">${esc(c.topic)}</code><button class="btn sm" data-act="ntCopy">Copier</button></div>
+    <label class="check" style="border:0"><input type="checkbox" id="nt_on" ${c.on ? 'checked' : ''}><div class="grow">Activer l’alerte de fin de repos</div></label>
+    <button class="btn block" data-act="ntTest">Tester (notification dans 10 s)</button>
+    <p class="small muted" style="margin:12px 0 0">Seuls « Repos terminé » et l’heure de fin sont envoyés à ntfy.sh. Le nom du sujet est aléatoire : garde-le pour toi.</p>`);
+}
+ACTIONS.ntOpen = () => ntSheet();
+ACTIONS.ntCopy = () => { try { navigator.clipboard.writeText(ntCfg().topic); toast('Sujet copié'); } catch (e) { toast(ntCfg().topic); } };
+ACTIONS.ntTest = () => { ntSend(Date.now() + 10500, 'test'); toast('Notification de test dans 10 s : verrouille le téléphone pour voir'); };
+document.addEventListener('change', e => { if (e.target && e.target.id === 'nt_on') { ntCfg().on = e.target.checked; tsave(); toast(e.target.checked ? 'Alerte activée' : 'Alerte désactivée'); } });
+// lien dans les réglages du minuteur
+openSheet = (orig => function (t, b) {
+  const btn = `<button class="menuopt" data-act="ntOpen" style="margin:8px 0"><span>🔔</span>Alerte écran verrouillé${TS.settings.ntfy && TS.settings.ntfy.on ? ' · activée' : ''}</button>`;
+  if (typeof b === 'string' && !b.includes('data-act="ntOpen"')) {
+    if (b.includes('id="t_restOn"')) b = b.replace(/(<label class="check"[^>]*><input type="checkbox" id="t_restOn")/, btn + '$1');
+    else if (t === 'Minuteur de repos') b += btn;
+  }
+  return orig.call(this, t, b);
+})(openSheet);
