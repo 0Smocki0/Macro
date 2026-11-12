@@ -273,6 +273,7 @@ function tick() {
     const left = TS.rest.end - Date.now();
     if (left <= 0) { TS.rest = null; tsave(); if (navigator.vibrate) navigator.vibrate([250, 120, 250]); beep(); toast('⏱️ Repos terminé : série suivante !'); }
     else {
+      if (bar && bar.classList.contains('closing')) { bar.remove(); bar = null; }
       if (!bar) { bar = document.createElement('div'); bar.id = 'restbar'; document.body.appendChild(bar); }
       const pct = Math.min(100, (1 - left / (TS.rest.total * 1000)) * 100);
       if (!bar.firstChild) bar.innerHTML = `<div class="rb-track"><i></i></div><div class="rb-time"></div><div class="rb-btns"><button data-act="tRestAdd" data-n="-15">−15</button><button data-act="tRestAdd" data-n="15">+15</button><button class="rb-skip" data-act="tRestSkip">Passer</button></div>`;
@@ -281,7 +282,7 @@ function tick() {
       return;
     }
   }
-  if (bar) bar.remove();
+  if (bar && !bar.classList.contains('closing')) { bar.classList.add('closing'); setTimeout(() => bar.remove(), 340); }
 }
 setInterval(tick, 250);
 function renderLiveBar() {

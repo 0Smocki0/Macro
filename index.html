@@ -1382,6 +1382,11 @@ body.in-live, body.in-live #view { touch-action: pan-y; overscroll-behavior-x: n
 .dragmode section.card.exo, .dragmode .rtex2 { will-change: transform; }
 .dragmode .rtex2.dragging, .dragmode section.card.exo.dragging { box-shadow: 0 12px 30px rgba(0,0,0,.45); }
 #sheetBody.dragmode { overscroll-behavior: contain; }
+#restbar.closing { animation: rbOut .32s cubic-bezier(.4, 0, .9, .6) forwards !important; pointer-events: none; }
+@keyframes rbOut { to { opacity: 0; transform: translateY(46px) scale(.9); } }
+#restbar .rb-nt { text-align: center; font-size: 12px; color: rgba(255,255,255,.55); margin-top: 10px; }
+#restbar .rb-nt:empty, #restbar.mini .rb-nt { display: none; }
+#restbar .rb-nt[data-s=err] { color: #ff9f0a; }
 .ntsteps { margin: 0 0 14px; padding-left: 20px; line-height: 1.5; }
 .nttopic { display: flex; gap: 8px; align-items: center; background: var(--surface2); border-radius: 12px; padding: 8px 8px 8px 12px; margin-bottom: 8px; }
 .nttopic code { flex: 1; font-size: 15px; user-select: all; -webkit-user-select: all; word-break: break-all; }

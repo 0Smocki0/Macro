@@ -102,6 +102,10 @@ function restDecor() {
     const t = bar.querySelector('.rb-time'); if (t) t.dataset.act = 'tRestMini';
   }
   bar.classList.toggle('mini', !!S.ui.rbMini || S.ui.tab !== 't_live');
+  const c = TS.settings.ntfy; let nt = bar.querySelector('.rb-nt');
+  const st = !c || !c.on || !TS.rest || (TS.rest.end - Date.now() < 11000 && NT.ok !== TS.rest.end) ? '' : NT.ok === TS.rest.end ? 'ok' : NT.ok === -1 ? 'err' : 'wait';
+  if (st && !nt) { bar.insertAdjacentHTML('beforeend', '<div class="rb-nt"></div>'); nt = bar.querySelector('.rb-nt'); }
+  if (nt && nt.dataset.s !== st) { nt.dataset.s = st; nt.textContent = st === 'ok' ? 'Alerte programmée sur ntfy' : st === 'err' ? 'Alerte non envoyée (pas de réseau ?)' : st === 'wait' ? 'Envoi de l’alerte…' : ''; }
   document.body.classList.toggle('in-live', S.ui.tab === 't_live');
 }
 setInterval(restDecor, 250);
@@ -255,19 +259,29 @@ document.addEventListener('change', e => { if (e.target && e.target.id === 't_mi
 // ---------- 11. Alerte partout (silencieux, écran éteint, hors de l’appli) : notification ntfy ----------
 // L’appli programme une notification sur ntfy.sh au début du repos (remplacée à chaque changement, annulée si on passe).
 // L’appli ntfy (App Store, gratuite) la reçoit comme une notification normale : vibre en silencieux, ne coupe pas la musique.
-const NT = { end: 0 };
+// état mémorisé : pas de double envoi si iOS recharge l’appli pendant le repos
+const NT = (() => { try { return JSON.parse(localStorage.getItem('macro.nt')) || { end: 0 }; } catch (e) { return { end: 0 }; } })();
+const ntSave = () => { try { localStorage.setItem('macro.nt', JSON.stringify(NT)); } catch (e) { } };
 const ntCfg = () => TS.settings.ntfy || (TS.settings.ntfy = { on: false, topic: 'macro-' + Array.from(crypto.getRandomValues(new Uint8Array(9)), b => 'abcdefghijkmnpqrstuvwxyz23456789'[b % 32]).join('') });
 const ntURL = () => 'https://ntfy.sh/' + encodeURIComponent(ntCfg().topic);
 function ntSend(end, seq = 'r' + end) {
-  return fetch(ntURL() + '/' + seq, { method: 'POST', body: 'Série suivante !', headers: { Title: 'Repos terminé', Priority: '5', Tags: 'bell', At: String(Math.round(end / 1000)) } }).catch(() => { });
+  // keepalive : la requête part même si l’écran est verrouillé juste après
+  // paramètres dans l’adresse (accents corrects, pas de pré-requête CORS)
+  const q = new URLSearchParams({ title: 'Repos terminé', priority: '5', tags: 'bell', at: String(Math.round(end / 1000)) });
+  return fetch(ntURL() + '/' + seq + '?' + q, { method: 'POST', keepalive: true, body: 'Série suivante !' })
+    .then(r => { if (seq !== 'test') { NT.ok = r.ok ? end : -1; ntSave(); } return r; })
+    .catch(() => { if (seq !== 'test') { NT.ok = -1; ntSave(); } });
 }
 // ntfy.sh enregistre les messages par lots : une annulation trop rapide peut être ratée, on la répète
 function ntCancel(seq) { const go = () => fetch(ntURL() + '/' + seq, { method: 'DELETE' }).catch(() => { }); go(); setTimeout(go, 3000); setTimeout(go, 8000); }
 function ntSync() {
   const c = TS.settings.ntfy; if (!c || !c.on) return;
   // une notification par repos ; si le temps change ou si on passe, l’ancienne est annulée
-  if (TS.rest) { if (TS.rest.end !== NT.end) { if (NT.end && Date.now() < NT.end - 1500) ntCancel('r' + NT.end); NT.end = TS.rest.end; if (NT.end - Date.now() > 11000) ntSend(NT.end); } }
-  else if (NT.end) { if (Date.now() < NT.end - 1500) ntCancel('r' + NT.end); NT.end = 0; }
+  if (TS.rest) {
+    if (TS.rest.end !== NT.end) { if (NT.end && Date.now() < NT.end - 1500) ntCancel('r' + NT.end); NT.end = TS.rest.end; NT.ok = 0; ntSave(); if (NT.end - Date.now() > 11000) ntSend(NT.end); }
+    else if (NT.ok === -1 && NT.end - Date.now() > 11000 && !NT.retry) { NT.retry = 1; ntSend(NT.end).finally(() => { NT.retry = 0; }); } // nouvel essai si l’envoi a échoué
+  }
+  else if (NT.end) { if (Date.now() < NT.end - 1500) ntCancel('r' + NT.end); NT.end = 0; NT.ok = 0; ntSave(); }
 }
 setInterval(() => { try { ntSync(); } catch (e) { } }, 1000);
 function ntSheet() {
@@ -281,7 +295,7 @@ function ntSheet() {
 }
 ACTIONS.ntOpen = () => ntSheet();
 ACTIONS.ntCopy = () => { try { navigator.clipboard.writeText(ntCfg().topic); toast('Sujet copié'); } catch (e) { toast(ntCfg().topic); } };
-ACTIONS.ntTest = () => { ntSend(Date.now() + 10500, 'test'); toast('Notification de test dans 10 s : verrouille le téléphone pour voir'); };
+ACTIONS.ntTest = () => { const c = ntCfg(); if (!c.on) { c.on = true; tsave(); const cb = $('#nt_on'); if (cb) cb.checked = true; } ntSend(Date.now() + 10500, 'test'); toast('Notification de test dans 10 s : verrouille le téléphone pour voir'); };
 document.addEventListener('change', e => { if (e.target && e.target.id === 'nt_on') { ntCfg().on = e.target.checked; tsave(); toast(e.target.checked ? 'Alerte activée' : 'Alerte désactivée'); } });
 // lien dans les réglages du minuteur
 openSheet = (orig => function (t, b) {
