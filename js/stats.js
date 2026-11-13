@@ -185,7 +185,7 @@ function bilanHTML() {
       ${(() => { const bars = barsHTML('bil', B, SB.m, SB.g, B.length - 1); return barInfo('bil', B.length - 1) + bars; })()}
       <div class="chipsrow" style="margin-top:26px">${Object.entries(MX).map(([k, [l]]) => `<button class="chip ${SB.m === k ? 'on' : ''}" data-act="stBF" data-k="m" data-v="${k}">${l}</button>`).join('')}</div></div>
     <div class="card stx-fade" style="background:var(--surface)"><b>Jours d’entraînement</b>
-      <div class="stx-dow">${['L', 'M', 'M', 'J', 'V', 'S', 'D'].map((l, i) => `<div><i style="height:${o.dow[i] / dmx * 100}%"></i><b>${o.dow[i] || ''}</b><span>${l}</span></div>`).join('')}</div></div>
+      <div class="stx-dow">${['L', 'M', 'M', 'J', 'V', 'S', 'D'].map((l, i) => `<div data-tip="${o.dow[i]} séance${o.dow[i] > 1 ? 's' : ''} le ${['lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi', 'dimanche'][i]}"><i style="height:${o.dow[i] / dmx * 100}%"></i><b>${o.dow[i] || ''}</b><span>${l}</span></div>`).join('')}</div></div>
     <h3 style="margin:16px 2px 6px">Exercices <span class="small muted">(${ex.length})</span></h3>
     <div class="stx-fade">${ex.slice(0, SB.all ? 999 : 8).map(([id, x]) => { const v = SB.m === 'sets' || SB.m === 'n' ? x.sets : x.vol;
       return `<button class="mvrow" data-act="tExInfo" data-id="${id}"><span class="mvname">${esc(exById(id).name)}</span><span class="bar"><i style="width:${v / exMx * 100}%"></i></span><span class="mvval"><b>${SB.m === 'sets' || SB.m === 'n' ? x.sets + ' sér.' : kgShort(x.vol)}</b><small>${x.n} séance${x.n > 1 ? 's' : ''}</small></span></button>`; }).join('')}

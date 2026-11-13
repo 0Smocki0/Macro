@@ -66,7 +66,7 @@ function openRecovery() {
   openSheet('Récupération', `<div class="rchead">${typeof lRing === 'function' ? `<div class="rcring">${lRing((R.score || 0) / 100, col, 92, 10)}<span><b>${R.score ?? '?'}</b><small>/100</small></span></div>` : ''}
       <div><b style="color:${col};font-size:20px">${R.score == null ? 'Pas encore de score' : lab}</b><div class="small muted">Basé sur ${R.known}/5 sources aujourd’hui. ${R.known < 3 ? 'Plus de sources = score plus fiable.' : ''}</div>
       ${R.hasCk ? '' : '<button class="btn sm primary" data-act="ckOpen" style="margin-top:8px">Faire mon bilan du matin</button>'}</div></div>
-    ${R.parts.map(p => `<div class="rcp ${p.score == null ? 'off' : ''}"><div class="grow"><div class="row" style="gap:6px"><b>${p.label}</b>${orig3(p.origin)}</div><div class="small muted">${esc(p.txt)}</div></div><b class="rcs">${p.score == null ? '—' : Math.round(p.score)}</b></div>`).join('')}
+    ${R.parts.map(p => `<div class="rcp ${p.score == null ? 'off' : ''}" data-act="rcPart" data-k="${p.key}" role="button"><div class="grow"><div class="row" style="gap:6px"><b>${p.label}</b>${orig3(p.origin)}</div><div class="small muted">${esc(p.txt)}</div></div><b class="rcs">${p.score == null ? '—' : Math.round(p.score)}</b><span class="rc-ch">›</span></div>`).join('')}
     <div class="card" style="background:var(--surface);margin-top:12px"><b>Fatigue accumulée : ${R.fatigue === 'probable' ? '<span style="color:#ff9f0a">probable</span>' : R.fatigue === 'possible' ? 'possible' : '<span style="color:#30d158">pas de signal</span>'}</b>
       ${R.flags.length ? `<ul class="small" style="margin:6px 0 0;padding-left:18px">${R.flags.map(f => `<li>${esc(f)}</li>`).join('')}</ul><p class="small muted" style="margin:6px 0 0">${R.fatigue === 'probable' ? 'Plusieurs signaux vont dans le même sens : une semaine plus légère (−30 à −50 % de séries, mêmes charges) permet souvent de repartir. Ce n’est qu’une hypothèse : à toi de juger avec tes sensations.' : 'Un seul signal : rien d’alarmant, à surveiller.'}</p>` : '<p class="small muted" style="margin:6px 0 0">Aucun des signaux suivis (charge, performances, effort ressenti, énergie, déficit) n’est en alerte.</p>'}</div>
     <details style="margin-top:8px"><summary class="small" style="color:var(--accent)">Comment le score est calculé ?</summary><div class="small muted">
@@ -74,5 +74,44 @@ function openRecovery() {
       <p><b>Sommeil</b> : 100 à 8 h, moins 18 points par heure d’écart (et davantage sous 6 h), moyenné avec la qualité. <b>Sensations</b> : énergie, courbatures et stress ramenés sur 100. <b>Charge</b> : séries × effort (RPE/10, ou 0,75 s’il n’est pas noté) sur 7 jours, comparées à ta moyenne hebdomadaire sur 28 jours (≤ 1,1 : 90 ; ≤ 1,3 : 70 ; ≤ 1,5 : 45 ; au-delà : 25). <b>Performances</b> : exercices en baisse sur 5 semaines. <b>Bilan énergétique</b> : écart entre ce que tu manges (journées complètes) et ta dépense estimée.</p>
       <p>Les étiquettes <i>mesuré</i>, <i>déclaré</i> et <i>estimé</i> indiquent l’origine de chaque donnée.</p></div></details>
     <button class="btn block" data-act="ckOpen" style="margin-top:10px">${R.hasCk ? 'Modifier mon bilan du matin' : 'Bilan du matin'}</button>`);
+  stxMark(() => openRecovery());
 }
 ACTIONS.rcOpen = () => openRecovery();
+
+// ---------- détail de chaque composante ----------
+ACTIONS.rcPart = el => {
+  const k = el.dataset.k; const t = todayStr(); let h = '', title = '';
+  if (k === 'sleep' || k === 'feel') {
+    title = k === 'sleep' ? 'Sommeil' : 'Sensations';
+    const days = Array.from({ length: 14 }, (_, i) => addDays(t, -i));
+    const lab5 = (v, L) => v ? `${v}/5${L ? ' ' + L[v - 1] : ''}` : '—';
+    h = `<p class="small muted" style="margin-top:0">Tes réponses des 14 derniers jours (déclaré). Le score du jour n’utilise que le bilan d’aujourd’hui.</p>
+      <div class="nhtab"><div class="nhr h ck5"><span>Jour</span>${k === 'sleep' ? '<span>Durée</span><span>Qualité</span>' : '<span>Énergie</span><span>Courbat.</span><span>Stress</span>'}</div>
+      ${days.map(d => { const c = S.checkins[d] || {}; return `<div class="nhr ck5"><span>${esc(fmtDate(d, { weekday: 'short', day: 'numeric' }))}</span>${k === 'sleep' ? `<span>${c.sleep ? fr(c.sleep) + ' h' : '—'}</span><span>${lab5(c.sq)}</span>` : `<span>${lab5(c.energy)}</span><span>${lab5(c.sore)}</span><span>${lab5(c.stress)}</span>`}</div>`; }).join('')}</div>
+      ${k === 'sleep' ? (() => { const v = days.map(d => (S.checkins[d] || {}).sleep).filter(Boolean); return v.length ? `<p class="small" style="margin:10px 0 0">Moyenne : <b>${fr(r1(ENG.avg(v)))} h</b> sur ${v.length} nuit${v.length > 1 ? 's' : ''} renseignée${v.length > 1 ? 's' : ''}. Repère : 7 à 9 h pour bien récupérer.</p>` : ''; })() : ''}
+      <button class="btn primary block" data-act="ckOpen" style="margin-top:12px">Remplir le bilan d’aujourd’hui</button>`;
+  } else if (k === 'load') {
+    title = 'Charge d’entraînement';
+    const L = dayLoads(28); const ac = ENG.acwr(L, t); const days = Array.from({ length: 28 }, (_, i) => addDays(t, -27 + i)); const mx = Math.max(1, ...days.map(d => L[d] || 0));
+    const W7 = TS.workouts.filter(w => wDate(w) >= addDays(t, -6)).sort((a, b) => b.start - a.start);
+    h = `<div class="stx-tiles three"><div class="stat"><div class="v">${r0(ac.acute)}</div><div class="l">charge 7 j</div></div><div class="stat"><div class="v">${r0(ac.chronic)}</div><div class="l">moyenne / sem. (28 j)</div></div><div class="stat"><div class="v">${ac.ratio != null ? fr(r1(ac.ratio)) : '—'}</div><div class="l">rapport</div></div></div>
+      <div class="rcload">${days.map(d => { const v = L[d] || 0; return `<div data-tip="${esc(fmtDate(d, { weekday: 'short', day: 'numeric', month: 'short' }))} : ${v ? `charge ${fr(r1(v))}` : 'repos'}"><i class="${d >= addDays(t, -6) ? 'cur' : ''}" style="height:${v / mx * 100}%"></i></div>`; }).join('')}</div>
+      <div class="row between small muted" style="margin:4px 0 10px"><span>il y a 4 semaines</span><span>aujourd’hui</span></div>
+      <p class="small muted">Charge d’une séance = nombre de séries de travail × effort (RPE/10, ou 0,75 si non noté). Un rapport proche de 1 = semaine habituelle ; au-delà de 1,3 = hausse brutale, plus fatigante ; sous 0,8 = semaine légère.</p>
+      ${W7.length ? `<h3 style="margin:12px 0 4px">Séances des 7 derniers jours</h3>${W7.map(w => `<div class="item" data-act="tWOpen" data-id="${w.id}"><div class="grow"><div class="name">${esc(w.name)}</div><div class="meta">${esc(fmtDate(wDate(w), { weekday: 'long', day: 'numeric' }))} · ${wSets(w)} séries · charge ${fr(r1(L[wDate(w)] || 0))}</div></div><span class="chev">›</span></div>`).join('')}` : ''}`;
+  } else if (k === 'perf') {
+    title = 'Performances';
+    const T_ = exTrends(35); const grp = { baisse: ['📉', 'En baisse'], stagne: ['⏸️', 'Stagnent'], progresse: ['📈', 'En progrès'], stable: ['➖', 'Stables'] };
+    h = `<p class="small muted" style="margin-top:0">Exercices faits au moins 4 fois ces 5 dernières semaines, d’après le 1RM estimé de chaque séance (mesuré). Touche un exercice pour voir sa courbe.</p>
+      ${Object.entries(grp).map(([s, [ic, l]]) => { const L = T_.filter(x => x.status === s); return L.length ? `<h3 style="margin:12px 0 4px">${ic} ${l} (${L.length})</h3>${L.map(x => `<div class="item" data-act="tExInfo" data-id="${x.id}"><div class="grow"><div class="name">${esc(x.X.name)}</div><div class="meta">${s === 'baisse' ? `▼ ${fr(Math.abs(x.drop))} % sous le meilleur des séances précédentes` : `${x.pctWeek >= 0 ? '+' : ''}${fr(x.pctWeek)} % par semaine`} · meilleur ${kg(x.best)}</div></div><span class="anp ${s}">${l.toLowerCase()}</span></div>`).join('')}` : ''; }).join('') || '<p class="muted">Pas assez de séances répétées sur 5 semaines pour juger.</p>'}`;
+  } else if (k === 'energy') {
+    title = 'Bilan énergétique';
+    const tv = S.tdee && S.tdee.v; const days = Array.from({ length: 7 }, (_, i) => addDays(t, -1 - i));
+    h = `<p class="small muted" style="margin-top:0">Ce que tu as mangé (déclaré) comparé à ta dépense suivie (estimée${tv ? ` : ${r0(tv)} kcal/jour` : ''}). Seules les journées complètes comptent.</p>
+      <div class="nhtab"><div class="nhr h"><span>Jour</span><span>Mangé</span><span>Écart</span><span>Comptée</span></div>
+      ${days.map(d => { const kc = dayKcal(d); const ok = dayComplete(d); return `<div class="nhr"><span>${esc(fmtDate(d, { weekday: 'short', day: 'numeric' }))}</span><span>${kc ? r0(kc) : '—'}</span><span>${kc && tv ? `${kc - tv >= 0 ? '+' : '−'}${r0(Math.abs(kc - tv))}` : '—'}</span><span>${ok ? '✓' : '—'}</span></div>`; }).join('')}</div>
+      <p class="small muted">Un déficit jusqu’à 20 % reste bien toléré ; au-delà de 25 % sur plusieurs jours, la récupération et les performances baissent souvent.</p>`;
+  }
+  openSheet(title, h);
+};
+stxDrill('rcPart');

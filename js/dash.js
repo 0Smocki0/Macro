@@ -13,7 +13,7 @@ function todayBlock() {
   const [lab, col] = scoreLab(R.score); const I = insightsCached(); const top = I[0];
   const G = goalsState(); const nb = Object.keys(S.badges).length;
   return `<div class="lsec">Aujourd’hui</div><div class="ltoday">
-    <button class="lt-rec" data-act="rcOpen"><div class="rcring sm">${lRing((R.score || 0) / 100, col, 64, 8)}<span><b>${R.score ?? '?'}</b></span></div><div><small>Récupération</small><b style="color:${col}">${R.score == null ? 'à évaluer' : lab}</b><small>${R.known}/5 sources</small></div></button>
+    <button class="lt-rec" data-act="rcOpen"><div class="rcring sm">${lRing((R.score || 0) / 100, col, 46, 6)}<span><b>${R.score ?? '?'}</b></span></div><div><small>Récupération</small><b style="color:${col}">${R.score == null ? 'à évaluer' : lab}</b><small>${R.known}/5 sources</small></div></button>
     <button class="lt-coach" data-act="ccDaily">${top ? `<span class="lt-ci">${top.ic}</span><div class="grow"><small>Conseil du jour · ${top.conf}</small><b>${top.title}</b><small>${I.length > 1 ? `+ ${I.length - 1} autre${I.length > 2 ? 's' : ''} ›` : 'voir le détail ›'}</small></div>` : `<span class="lt-ci">✅</span><div class="grow"><small>Coach</small><b>Rien à signaler aujourd’hui</b><small>d’après tes données</small></div>`}</button></div>
     <div class="lt-acts">${R.hasCk ? '' : '<button data-act="ckOpen">🌅 Bilan du matin</button>'}<button data-act="ccWeek">📅 Bilan semaine</button><button data-act="qOpen">⚡ Saisie rapide</button><button data-act="gOpen">🎯 Objectifs${G.length ? ` · ${G.filter(g => g.done).length}/${G.length}` : ''}${nb ? ` · 🏅${nb}` : ''}</button></div>`;
 }
@@ -141,3 +141,6 @@ ACTIONS.qGo = () => {
       if (s) Object.assign(s, o); else ex.sets.push({ type: 'n', ...o }); n++; } }
   save(); tsave(); closeSheet(); render(); if ($('#launch') && typeof showLauncher === 'function') showLauncher(); toast(`${n} élément${n > 1 ? 's' : ''} ajouté${n > 1 ? 's' : ''}`);
 };
+
+// l’accueil a pu être dessiné avant ce fichier : on le redessine avec le bloc « Aujourd’hui »
+if ($('#launch') && $('#launch').innerHTML) showLauncher();

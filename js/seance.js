@@ -59,7 +59,13 @@ if (typeof renderWiz === 'function') renderWiz = (orig => function () {
     { item: '#view section.card.exo', box: () => $('#view'), scroller: () => null, menu: '[data-act=tExMenu]', ok: () => S.ui.tab === 't_live',
       drop: (a, b) => { const x = TS.active.exercises; const [m] = x.splice(a, 1); x.splice(b, 0, m); tsave(); render(); } },
     { item: '#sheetBody .rtex2', box: () => $('#sheetBody'), scroller: () => $('#sheetBody'), menu: '[data-act=rteMenu]', ok: () => !!RT,
-      drop: (a, b) => { const x = RT.exercises; const [m] = x.splice(a, 1); x.splice(b, 0, m); renderRoutineEditor(); rteRefresh(); } }
+      drop: (a, b) => { const x = RT.exercises; const [m] = x.splice(a, 1); x.splice(b, 0, m); renderRoutineEditor(); rteRefresh(); } },
+    // routines : on les range au doigt, à l’intérieur de leur liste (hors dossier ou dans un même dossier)
+    { item: '#view section.card.routine', items: card => [...card.parentElement.children].filter(c => c.matches('section.card.routine')),
+      box: () => $('#view'), scroller: () => null, menu: '[data-act=tRoutineMenu]', ok: () => S.ui.tab === 't_home' && (S.ui.rtTab || 'mine') === 'mine',
+      drop: (a, b, s) => { const ids = s.cards.map(c => c.querySelector('[data-act=tRoutineMenu]').dataset.id); const R = TS.routines; const m = R.find(r => r.id === ids[a]); R.splice(R.indexOf(m), 1);
+        const ti = R.findIndex(r => r.id === ids[b]); R.splice(b > a ? ti + 1 : ti, 0, m); s.movedId = m.id; tsave(); render(); },
+      find: s => { const b = $(`#view [data-act=tRoutineMenu][data-id="${s.movedId}"]`); return b && b.closest('section'); } }
   ];
   let st = null;
   const sTop = sc => sc ? sc.scrollTop : scrollY;
@@ -82,7 +88,7 @@ if (typeof renderWiz === 'function') renderWiz = (orig => function () {
       st.drag = true; const before = st.card.getBoundingClientRect(); const grab = Math.min(t.clientY - before.top, 30);
       K.box().classList.add('dragmode'); st.card.classList.add('dragging');
       const nr = st.card.getBoundingClientRect(); const want = t.clientY - grab; if (sc) sc.scrollTop += nr.top - want; else scrollBy(0, nr.top - want);
-      st.cards = qa(K.item); st.from = st.cards.indexOf(st.card); st.to = st.from;
+      st.cards = K.items ? K.items(st.card) : qa(K.item); st.from = st.cards.indexOf(st.card); st.to = st.from;
       st.y0 = t.clientY + sTop(sc); st.rects = st.cards.map(c => { const r = c.getBoundingClientRect(); return { top: r.top + sTop(sc), h: r.height }; });
       st.gap = st.cards.length > 1 ? st.rects[1].top - st.rects[0].top - st.rects[0].h : 10;
       st.cards.forEach(c => { c.style.transition = c === st.card ? 'none' : 'transform .2s cubic-bezier(.2,.9,.3,1)'; });
@@ -97,7 +103,7 @@ if (typeof renderWiz === 'function') renderWiz = (orig => function () {
       if (!sc) { const hd = $('.livehead'); if (hd) top = Math.max(top, hd.getBoundingClientRect().bottom); for (const q of ['#tabs', '#restbar']) { const e = $(q); if (e) { const r = e.getBoundingClientRect(); if (r.height && r.top > innerHeight / 2) bot = Math.min(bot, r.top); } } }
       st.edge = { top, bot };
     }
-    const up = st.edge.top + 110 - y, dn = y - (st.edge.bot - 110);
+    const moved = Math.abs(y - st.y) > 24; const up = moved ? st.edge.top + 110 - y : 0, dn = moved ? y - (st.edge.bot - 110) : 0; // pas de défilement tant que le doigt n’a pas vraiment bougé
     if (up > 0) { const v = Math.min(22, 3 + up / 5); if (sc) sc.scrollTop -= v; else scrollBy(0, -v); } else if (dn > 0) { const v = Math.min(22, 3 + dn / 5); if (sc) sc.scrollTop += v; else scrollBy(0, v); }
     const dy = y + sTop(sc) - st.y0; st.dy = dy; st.card.style.transform = `translate3d(0,${dy}px,0) scale(1.03)`;
     const R = st.rects, me = R[st.from]; const mid = me.top + dy + me.h / 2; let to = st.from;
@@ -118,8 +124,8 @@ if (typeof renderWiz === 'function') renderWiz = (orig => function () {
     setTimeout(() => {
       const sc = s.K.scroller(); const anchor = s.card.getBoundingClientRect().top;
       const b = s.K.box(); if (b) b.classList.remove('dragmode'); qa(s.K.item).forEach(c => { c.style.transition = 'none'; c.style.transform = ''; c.classList.remove('exlift', 'dragging'); });
-      if (s.to !== s.from) s.K.drop(s.from, s.to);
-      const c = qa(s.K.item)[s.to]; if (!c) return;
+      if (s.to !== s.from) s.K.drop(s.from, s.to, s);
+      const c = s.to === s.from ? s.card : s.K.find ? s.K.find(s) : qa(s.K.item)[s.to]; if (!c) return;
       const d = c.getBoundingClientRect().top - anchor; if (sc) sc.scrollTop += d; else scrollTo(0, scrollY + d);
       c.classList.add('dropped'); setTimeout(() => c.classList.remove('dropped'), 500);
       requestAnimationFrame(() => qa(s.K.item).forEach(x => { x.style.transition = ''; }));
@@ -213,3 +219,6 @@ renderPickList = (orig => function () {
   orig.apply(this, arguments);
   qa('#plist .item[data-id]').forEach(it => { const X = exById(it.dataset.id); const nm = it.querySelector('.name'); if (X && nm) { const l = exLabel(X); if (l !== X.name) nm.textContent = l; } });
 })(renderPickList);
+
+// l’appui long sur une routine est géré par le déplacement au doigt (relâcher sans bouger = menu ⋯)
+{ const i = LP_TARGETS.findIndex(x => x[0] === 'section.card.routine'); if (i >= 0) LP_TARGETS.splice(i, 1); }
