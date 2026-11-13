@@ -1533,6 +1533,17 @@ details.cc > .ins { background: transparent; padding-top: 0; margin: 0; } detail
 .ltoday b { font-size: 13px; line-height: 1.25; } .ltoday small { font-size: 10.5px; line-height: 1.3; }
 .rcring.sm b { font-size: 15px; } .lt-ci { font-size: 20px; }
 .lt-coach b { -webkit-line-clamp: 2; }
+/* v93 : routines déplacées au doigt (bandes animées), barre de séance stable */
+#view.dragmode > *, .dragmode section.card.routine, section.card.routine.exlift, section.card.routine.dragging { animation: none !important; }
+.dragmode section.card.routine { will-change: transform; padding-top: 10px !important; padding-bottom: 10px !important; }
+.dragmode section.card.routine > :not(.mealhead) { display: none !important; }
+.dragmode section.card.routine .mealhead .small, .dragmode section.card.routine .rnote { display: none; }
+.dragmode section.card.routine.dragging { box-shadow: 0 12px 30px rgba(0, 0, 0, .45); }
+.dragmode details.folder > summary { pointer-events: none; }
+section.card.routine.exlift { transform: scale(1.02); box-shadow: 0 18px 44px rgba(0, 0, 0, .55) !important; transition: transform .18s ease; }
+section.card.routine.dropped { animation: dropIn .45s ease-out !important; }
+#view.enter > .livehead, .livehead { animation: none !important; transform: none !important; will-change: auto; }
+.livestats b { font-variant-numeric: tabular-nums; }
 
 #restbar.closing { animation: rbOut .32s cubic-bezier(.4, 0, .9, .6) forwards !important; pointer-events: none; }
 @keyframes rbOut { to { opacity: 0; transform: translateY(46px) scale(.9); } }
