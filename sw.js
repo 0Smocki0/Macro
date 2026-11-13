@@ -1,6 +1,6 @@
 // Service worker : l'appli fonctionne hors-ligne (sauf recherche Open Food Facts / scan).
-const CACHE = 'macro-v90';
-const ASSETS = ['./', 'index.html', 'js/app.js', 'js/foods.js', 'js/extras.js', 'js/train.js', 'js/anim.js', 'js/ux.js', 'js/progress.js', 'js/supps.js', 'js/slide.js', 'js/popmenu.js', 'js/variants.js', 'js/prefs.js', 'js/coach.js', 'js/plan.js', 'js/rtedit.js', 'js/home.js', 'js/polish.js', 'js/launch.js', 'js/look.js', 'js/homecfg.js', 'js/sheetdrag.js', 'js/feel.js', 'js/seance.js', 'js/build.js', 'js/stamp.js', 'js/fedb.js', 'js/exanim.js', 'js/live.js', 'js/guide.js', 'manifest.webmanifest', 'icons/icon.svg', 'icons/icon-180.png', 'icons/icon-192.png', 'icons/icon-512.png'];
+const CACHE = 'macro-v91';
+const ASSETS = ['./', 'index.html', 'js/app.js', 'js/foods.js', 'js/extras.js', 'js/train.js', 'js/anim.js', 'js/ux.js', 'js/progress.js', 'js/supps.js', 'js/slide.js', 'js/popmenu.js', 'js/variants.js', 'js/prefs.js', 'js/coach.js', 'js/plan.js', 'js/rtedit.js', 'js/home.js', 'js/polish.js', 'js/launch.js', 'js/look.js', 'js/homecfg.js', 'js/sheetdrag.js', 'js/feel.js', 'js/seance.js', 'js/build.js', 'js/stamp.js', 'js/fedb.js', 'js/exanim.js', 'js/live.js', 'js/stats.js', 'js/engine.js', 'js/core.js', 'js/nutri2.js', 'js/train2.js', 'js/recov.js', 'js/coach2.js', 'js/dash.js', 'js/guide.js', 'manifest.webmanifest', 'icons/icon.svg', 'icons/icon-180.png', 'icons/icon-192.png', 'icons/icon-512.png'];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS)).then(() => self.skipWaiting()));
